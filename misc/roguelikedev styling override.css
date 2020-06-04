@@ -1,0 +1,16 @@
+@-moz-document domain("rogueliketutorials.com") {
+    body {
+        color: #CCC;
+        background-color: #333
+    }
+    .container {
+        max-width: 100%;
+    }
+    .col-lg-8 {
+        flex: none;
+        max-width: none;
+    }
+    .text-dark {
+        color: #CCC!important;
+    }
+    }
