@@ -1,64 +1,64 @@
+'''Engine file'''
 import tcod as libtcod
-from input_handlers import handle_keys
+import pygame
+import os
+
+import config
+from event_handlers import handle_events
+
+
+# GLOBAL VARIABLES
+SURFACE_MAIN = None
 
 
 def main():
     '''Main engine function'''
-    # TODO: Magic numbers: screen size
-    screen_width = 80
-    screen_height = 50
 
-    # set player default position
-    # TODO: Magin number: player position
-    player_x = int(screen_width // 2)
-    player_y = int(screen_height // 2)
-
-    # set font to default png
-    # TODO: Magic numbers: Window name
-    libtcod.console_set_custom_font('arial10x10.png', libtcod.FONT_TYPE_GRAYSCALE | libtcod.FONT_LAYOUT_TCOD)
-    libtcod.console_init_root(screen_width, screen_height, 'RLDev2020')
-
-    # make default console
-    con = libtcod.console_new(screen_width, screen_height)
-
-    key = libtcod.Key()
-    mouse = libtcod.Mouse()
+    # gobal quit flag
+    should_quit = False
 
     # main loop
-    while not libtcod.console_is_window_closed():
+    while not should_quit:
 
+        # handle inputs
+        messages = handle_events(pygame.event.get())
+        should_quit = messages.get('exit')
         # print to screen
-        libtcod.console_clear(con)
-        libtcod.console_set_default_foreground(con, libtcod.white)
+        draw()
 
-        # this draws the @
-        libtcod.console_put_char(con, player_x, player_y, '@', libtcod.BKGND_NONE)
-        libtcod.console_blit(con, 0, 0, screen_width, screen_height, 0, 0, 0)
-        libtcod.console_flush()
-
-        # FIXME: Why is this line here?
-        libtcod.console_put_char(con, player_x, player_y, ' ', libtcod.BKGND_NONE)
-
-        # get inputs
-        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS, key, mouse)
-        action = handle_keys(key)
-
-        move = action.get('move')
-        should_exit = action.get('exit')
-        fullscreen = action.get('fullscreen')
-
-        if move:
-            dx, dy = move
-            player_x += dx
-            player_y += dy
-
-        if should_exit:
-            return True
-            # FIXME this feels super janky. Why are we simply returning true from the main loop?
-
-        if fullscreen:
-            libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
+    # ... and we're done!
+    pygame.quit()
 
 
+def initialize():
+    ''' ONLY TO BE RUN ON INITIAL START! This is not a restart (yet)!'''
+    # We'll be referencing the global SURFACE_MAIN
+    global SURFACE_MAIN
+
+    # Init pygame
+    pygame.init()
+
+    # make main surface
+    SURFACE_MAIN = pygame.display.set_mode(
+        size=(int(config.Game.game_width.value), int(config.Game.game_height.value)))
+
+
+def draw():
+    '''Draw game window every frame'''
+    # global use of SURFACE_MAIN
+    global SURFACE_MAIN
+
+    # clear screen
+    SURFACE_MAIN.fill(config.Colors.black.value)
+    # TODO draw map
+    player = pygame.image.load(os.path.join(
+        "tiles", config.Sprites.player.value))
+    SURFACE_MAIN.blit(player, (200, 200))
+    # Push to screen
+    pygame.display.flip()
+
+
+# MAKE IT SO
 if __name__ == '__main__':
+    initialize()
     main()
