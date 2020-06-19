@@ -1,5 +1,4 @@
-'''''Engine file'''''
-import os
+'''Engine file'''
 import tcod as libtcod
 import pygame
 
@@ -10,6 +9,7 @@ from event_handlers import handle_events
 
 # GLOBAL VARIABLES
 SURFACE_MAIN = None
+CONFIG = config.Config()
 
 
 def main():
@@ -41,7 +41,7 @@ def initialize():
 
     # make main surface
     SURFACE_MAIN = pygame.display.set_mode(
-        size=(int(config.Game.game_width.value), int(config.Game.game_height.value)))
+        size=(int(CONFIG.Game["game_width"]), int(CONFIG.Game["game_height"])))
 
 
 def draw():
@@ -50,15 +50,16 @@ def draw():
     global SURFACE_MAIN
 
     # clear screen
-    SURFACE_MAIN.fill(config.Colors.black.value)
+    SURFACE_MAIN.fill(tuple(CONFIG.Colors["black"]))
     # TODO draw map
     # draw character
-    # player = pygame.image.load(os.path.join("tiles", config.Sprites.player.value))
+    # player = pygame.image.load(os.path.join("tiles", CONFIG.Sprites.player.value))
     ss = spritesheet.spritesheet(
-        config.SpriteSheets.base.value, config.Game.tile_size.value, config.Game.tile_gap.value)
-    # Sprite is 16x16 pixels at location 0,0 in the file...
-    image = ss.sprite_at(config.Sprites.player.value)
+        CONFIG.SpriteSheets["char"], CONFIG.Game["tile_size"], CONFIG.Game["tile_gap"])
+
+    image = ss.sprite_at(tuple(CONFIG.Sprites["player"]))
     SURFACE_MAIN.blit(image, (200, 200))
+
     # Push to screen
     pygame.display.flip()
 

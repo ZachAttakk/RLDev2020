@@ -1,0 +1,66 @@
+{
+  "Colors": [
+    {
+      "name": "grey",
+      "values": [
+        100,
+        100,
+        100
+      ]
+    },
+    {
+      "name": "orange",
+      "values": [
+        255,
+        170,
+        0
+      ]
+    }
+  ],
+  "SpriteSheets": [
+    {
+      "name": "base",
+      "value": "roguelikeSheet_transparent.png"
+    },
+    {
+      "name": "char",
+      "value": "roguelikeChar_transparent.png"
+    }
+  ],
+  "Sprites": [
+    {
+      "name": "player",
+      "sheet": "char",
+      "values": [
+        0,
+        6
+      ]
+    }
+  ],
+  "Game": [
+    {
+      "name": "fullscreen",
+      "value": false
+    },
+    {
+      "name": "game_height",
+      "value": 300
+    },
+    {
+      "name": "game_width",
+      "value": 400
+    },
+    {
+      "name": "scale",
+      "value": 2.0
+    },
+    {
+      "name": "tile_size",
+      "value": 16
+    },
+    {
+      "name": "tile_gap",
+      "value": 1
+    }
+  ]
+}
