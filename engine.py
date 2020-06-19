@@ -1,9 +1,10 @@
-'''Engine file'''
+'''''Engine file'''''
+import os
 import tcod as libtcod
 import pygame
-import os
 
 import config
+import spritesheet
 from event_handlers import handle_events
 
 
@@ -51,9 +52,13 @@ def draw():
     # clear screen
     SURFACE_MAIN.fill(config.Colors.black.value)
     # TODO draw map
-    player = pygame.image.load(os.path.join(
-        "tiles", config.Sprites.player.value))
-    SURFACE_MAIN.blit(player, (200, 200))
+    # draw character
+    # player = pygame.image.load(os.path.join("tiles", config.Sprites.player.value))
+    ss = spritesheet.spritesheet(
+        config.SpriteSheets.base.value, config.Game.tile_size.value, config.Game.tile_gap.value)
+    # Sprite is 16x16 pixels at location 0,0 in the file...
+    image = ss.sprite_at(config.Sprites.player.value)
+    SURFACE_MAIN.blit(image, (200, 200))
     # Push to screen
     pygame.display.flip()
 

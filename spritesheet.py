@@ -9,12 +9,15 @@ import pygame
 
 
 class spritesheet(object):
-    def __init__(self, filename):
+    def __init__(self, filename, tile_size=None, tile_gap=0):
         try:
             self.sheet = pygame.image.load(filename).convert()
-        except pygame.error, message:
-            print 'Unable to load spritesheet image:', filename
-            raise SystemExit, message
+        except pygame.error as message:
+            print('Unable to load spritesheet image: %s' % filename)
+            raise SystemExit(message)
+        self.tile_size = tile_size
+        self.tile_gap = tile_gap
+        self.filename = filename
     # Load a specific image from a specific rectangle
 
     def image_at(self, rectangle, colorkey=None):
@@ -23,7 +26,7 @@ class spritesheet(object):
         image = pygame.Surface(rect.size).convert()
         image.blit(self.sheet, (0, 0), rect)
         if colorkey is not None:
-            if colorkey is -1:
+            if colorkey == -1:
                 colorkey = image.get_at((0, 0))
             image.set_colorkey(colorkey, pygame.RLEACCEL)
         return image
@@ -39,3 +42,29 @@ class spritesheet(object):
         tups = [(rect[0]+rect[2]*x, rect[1], rect[2], rect[3])
                 for x in range(image_count)]
         return self.images_at(tups, colorkey)
+
+    def sprite_at(self, pos, size=None, gap=None, colorkey=None):
+        "Loads sprite at position for the size of tile and gap between tiles provided"
+
+        # Sanity check the size and gap
+        if (size is None and self.tile_size is None):
+            raise SystemError("Spritesheet has no size: %s" % self.filename)
+
+        # set spritesheet values if provided
+        # Theoretically this should always be the same once set
+        if size is not None:
+            self.tile_size = size
+        if gap is not None:
+            self.tile_gap = gap
+
+        # calculate pixel positions
+        if pos[0] != 0:
+            _x_pix = pos[0]*(self.tile_size+self.tile_gap)
+        else:
+            _x_pix = pos[0]
+        if pos[1] != 0:
+            _y_pix = pos[1]*(self.tile_size+self.tile_gap)
+        else:
+            _y_pix = pos[1]
+        # use image_at to load the tile and return
+        return(self.image_at((_x_pix, _y_pix, self.tile_size, self.tile_size)))
