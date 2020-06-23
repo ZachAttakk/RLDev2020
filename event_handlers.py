@@ -18,7 +18,7 @@ def handle_events(events):
             response['exit'] = True
 
         # Movement keys and escape to quit
-        if event.type == pygame.KEYUP:
+        if event.type == pygame.KEYDOWN:
 
             if event.key == pygame.K_UP:
                 response['move'] = (0, -1)

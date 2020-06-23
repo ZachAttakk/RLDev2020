@@ -16,14 +16,16 @@ class Config:
             "grey": (100, 100, 100)
         }
         self.SpriteSheets = {
-            "base": os.path.join("tiles", "roguelikeSheet_transparent.png")
+            "base": os.path.join("tiles", "roguelikeSheet_transparent.png"),
+            "char": os.path.join("tiles", "roguelikeChar_transparent.png")
         }
         self.Sprites = {
-            "player": (15, 5)
+            "player": (0, 6),
+            "npc": (0, 11)
         }
         self.Game = {
             "fullscreen": False,
-            "game_height": 300,
+            "game_height": 320,
             "game_width": 400,
             "scale": 2.0,
             "tile_size": 16,
@@ -32,10 +34,10 @@ class Config:
 
         # grab settings file
         try:
-            file = open("config.json", "r")
-            settings = json.load(file)
-            if len(settings) > 0:
-                self.__load_config(settings)
+            with open("config.json", "r") as file:
+                settings = json.load(file)
+                if len(settings) > 0:
+                    self.__load_config(settings)
         except FileNotFoundError as error:
             print(error)
         except json.JSONDecodeError as error:

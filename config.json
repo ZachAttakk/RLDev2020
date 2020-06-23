@@ -35,6 +35,14 @@
         0,
         6
       ]
+    },
+    {
+      "name": "npc",
+      "sheet": "char",
+      "values": [
+        0,
+        11
+      ]
     }
   ],
   "Game": [
@@ -44,7 +52,7 @@
     },
     {
       "name": "game_height",
-      "value": 300
+      "value": 320
     },
     {
       "name": "game_width",
