@@ -5,13 +5,35 @@
 # Note: When calling images_at the rect is the format:
 # (x, y, x + offset, y + offset)
 # https://www.pygame.org/wiki/Spritesheet
+# Heavily modified by me
+# Sheets now remember their tile size and can provide sprites based on it
 import pygame
+
+
+def get_sheets(sheets):
+    """Change a dictionary list of spritesheet info into a dictionary list of spritesheet objects
+
+    Args:
+        sheets (dict): Dictionary from config spritesheets
+
+    Returns:
+        dict: spritesheet objects
+    """
+    loaded_sheets = {}
+    for i in sheets:
+        # for each sheet in the list, grab the dictionary under it
+        _sh = sheets.get(i)
+        # make a spritesheet from it, add it to the dictionary that's being returned
+        loaded_sheets[i] = spritesheet(
+            _sh.get("path"), _sh.get("tile_size"), _sh.get("tile_gap"))
+        # and send them back
+    return loaded_sheets
 
 
 class spritesheet(object):
     def __init__(self, filename, tile_size=None, tile_gap=0):
         try:
-            self.sheet = pygame.image.load(filename).convert()
+            self.sheet = pygame.image.load(filename).convert_alpha()
         except pygame.error as message:
             print('Unable to load spritesheet image: %s' % filename)
             raise SystemExit(message)
@@ -23,12 +45,12 @@ class spritesheet(object):
     def image_at(self, rectangle, colorkey=None):
         "Loads image from x,y,x+offset,y+offset"
         rect = pygame.Rect(rectangle)
-        image = pygame.Surface(rect.size).convert()
+        image = pygame.Surface(rect.size).convert_alpha()
         image.blit(self.sheet, (0, 0), rect)
-        if colorkey is not None:
-            if colorkey == -1:
-                colorkey = image.get_at((0, 0))
-            image.set_colorkey(colorkey, pygame.RLEACCEL)
+    #    if colorkey is not None:
+    #        if colorkey == -1:
+    #            colorkey = image.get_at((0, 0))
+    #        image.set_colorkey(colorkey, pygame.RLEACCEL)
         return image
     # Load a whole bunch of images and return them as a list
 
@@ -67,4 +89,4 @@ class spritesheet(object):
         else:
             _y_pix = pos[1]
         # use image_at to load the tile and return
-        return(self.image_at((_x_pix, _y_pix, self.tile_size, self.tile_size)))
+        return self.image_at((_x_pix, _y_pix, self.tile_size, self.tile_size), colorkey)

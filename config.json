@@ -20,11 +20,15 @@
   "SpriteSheets": [
     {
       "name": "base",
-      "value": "roguelikeSheet_transparent.png"
+      "path": "roguelikeSheet_transparent.png",
+      "tile_size": 16,
+      "tile_gap": 1
     },
     {
       "name": "char",
-      "value": "roguelikeChar_transparent.png"
+      "path": "roguelikeChar_transparent.png",
+      "tile_size": 16,
+      "tile_gap": 1
     }
   ],
   "Sprites": [
