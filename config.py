@@ -11,6 +11,7 @@ class Config:
 
         # create defaults
         self.Colors = {
+            "empty": (0, 0, 0, 0),
             "black": (0, 0, 0),
             "white": (255, 255, 255),
             "grey": (100, 100, 100)

@@ -40,12 +40,14 @@ class spritesheet(object):
         self.tile_size = tile_size
         self.tile_gap = tile_gap
         self.filename = filename
+        self.empty = pygame.Color(0, 0, 0, 0)
     # Load a specific image from a specific rectangle
 
     def image_at(self, rectangle, colorkey=None):
         "Loads image from x,y,x+offset,y+offset"
         rect = pygame.Rect(rectangle)
         image = pygame.Surface(rect.size).convert_alpha()
+        image.fill(self.empty)
         image.blit(self.sheet, (0, 0), rect)
     #    if colorkey is not None:
     #        if colorkey == -1:
