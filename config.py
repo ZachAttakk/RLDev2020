@@ -54,7 +54,10 @@ class Config:
             "scale": 2.0,
             "tile_size": 16,
             "map_width": 25,
-            "map_height": 20
+            "map_height": 20,
+            "room_size_max": 10,
+            "room_size_min": 6,
+            "rooms_max": 10
         }
 
         # grab settings file

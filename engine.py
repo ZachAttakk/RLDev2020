@@ -1,98 +1,77 @@
 '''Engine file'''
-import tcod as libtcod
+from typing import Set, Iterable
+from tcod.map import compute_fov
 import pygame
 import spritesheet
 
-import config
+from config import Config
 from entity import Entity
 from map_objects.game_map import GameMap
-from event_handlers import handle_events
+import event_handlers
 from render_functions import render_entities, render_map
 
-# Grab config
-CONFIG = config.Config()
 
+class Engine:
+    def __init__(self, entities: Set[Entity], game_map: GameMap, player: Entity, config: Config = None):
+        self.ENTITIES = entities
+        self.GAMEMAP = game_map
+        self.PLAYER = player
+        self.CONFIG = config
+        self.spritesheets = spritesheet.get_sheets(config.SpriteSheets)
+        self.update_fov()
 
-def main():
-    '''Main engine function'''
+    def handle_events(self, events: Iterable[pygame.event.EventType]):
+        for event in events:
+            action = event_handlers.handle_event(event)
+            if action is None:
+                continue
+            # do the thing.
+            # actions will handle their own validation
+            action.perform(self, self.PLAYER)
 
-    # Init pygame
-    pygame.init()
+            # update FOV
+            self.update_fov()
 
-    # get surface size
-    scale = CONFIG.Game.get("scale")
-    # make main surface
-    pygame.display.set_mode(
-        size=(int(CONFIG.Game["game_width"] * scale), int(CONFIG.Game["game_height"] * scale)))
+    def update_fov(self) -> None:
+        """Recompute the visible area based on the player's point of view."""
 
-    # preload sprite sheets
-    spritesheets = spritesheet.get_sheets(CONFIG.SpriteSheets)
-    # make player and rando NPC
-    # TODO: Magic numbers!
-    PLAYER = Entity(spritesheets.get(CONFIG.Sprites.get("player").get(
-        "sheet")).sprite_at(CONFIG.Sprites.get("player").get("values")), (7, 5))
-    npc = Entity(spritesheets.get(CONFIG.Sprites.get("npc").get(
-        "sheet")).sprite_at(CONFIG.Sprites.get("npc").get("values")), (3, 3))
+        # TODO: Magic numbers!
+        self.GAMEMAP.visible[:] = compute_fov(
+            self.GAMEMAP.tiles["transparent"], self.PLAYER.position, radius=8
+        )
+        # if a tile is visible it should be added to explored
+        self.GAMEMAP.explored |= self.GAMEMAP.visible
 
-    ENTITIES = [PLAYER, npc]
+    def render(self, console):
+        '''Draw game window every frame'''
 
-    # Make us a map!
-    GAME_MAP = GameMap(CONFIG.Game.get("map_width"),
-                       CONFIG.Game.get("map_height"))
+        # global use of SURFACE_MAIN
+        surface_main = console
 
-    # gobal quit flag
-    should_quit = False
+        surface_map = pygame.surface.Surface(
+            size=(self.CONFIG.Game.get("game_width"),
+                  self.CONFIG.Game.get("game_height")),
+            flags=surface_main.get_flags()).convert_alpha()
 
-    # MAIN LOOP
-    while not should_quit:
+        # clear screen
+        surface_main.fill(tuple(self.CONFIG.Colors.get("black")))
 
-        # handle inputs
-        messages = handle_events(pygame.event.get())
+        # draw map
+        render_map(surface_map, self.GAMEMAP, self.spritesheets,
+                   self.CONFIG.Sprites, self.CONFIG.Game.get("tile_size"))
 
-        if messages.get("move"):
-            PLAYER.move(messages["move"])
+        # draw entities
+        render_entities(surface_map, self.ENTITIES,
+                        self.CONFIG.Game.get("tile_size"))
 
-        should_quit = messages.get('exit')
-
-        # print to screen
-        draw_all(ENTITIES, GAME_MAP, spritesheets)
-
-    # ... and we're done!
-    pygame.quit()
-
-
-def draw_all(ENTITIES, MAP, spritesheets):
-    '''Draw game window every frame'''
-
-    # global use of SURFACE_MAIN
-    surface_main = pygame.display.get_surface()
-
-    surface_map = pygame.surface.Surface(size=(CONFIG.Game.get(
-        "game_width"), CONFIG.Game.get("game_height")), flags=surface_main.get_flags()).convert_alpha()
-
-    # clear screen
-    surface_main.fill(tuple(CONFIG.Colors.get("black")))
-
-    # draw map
-    render_map(surface_map, MAP, spritesheets,
-               CONFIG.Sprites, CONFIG.Game.get("tile_size"))
-
-    # draw entities
-    render_entities(surface_map, ENTITIES, CONFIG.Game.get("tile_size"))
-
-    # Now we scale up and blit to the screen.
-    _scale = CONFIG.Game.get("scale")
-    if _scale != 1.0:
-        _scaled_size = list(surface_map.get_size())
-        _scaled_size = [int(i * _scale) for i in _scaled_size]
-        pygame.transform.scale(surface_map, tuple(
-            _scaled_size), surface_main).convert_alpha()
-    else:
-        surface_main.blit(surface_map, (0, 0))
-    # Push to screen
-    pygame.display.flip()
-
-
-# MAKE IT SO
-if __name__ == '__main__':
-    main()
+        # Now we scale up and blit to the screen.
+        _scale = self.CONFIG.Game.get("scale")
+        if _scale != 1.0:
+            _scaled_size = list(surface_map.get_size())
+            _scaled_size = [int(i * _scale) for i in _scaled_size]
+            pygame.transform.scale(surface_map, tuple(
+                _scaled_size), surface_main).convert_alpha()
+        else:
+            surface_main.blit(surface_map, (0, 0))
+        # Push to screen
+        pygame.display.flip()

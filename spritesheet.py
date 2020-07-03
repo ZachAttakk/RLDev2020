@@ -41,6 +41,7 @@ class spritesheet(object):
         self.tile_gap = tile_gap
         self.filename = filename
         self.empty = pygame.Color(0, 0, 0, 0)
+        self.darkened = pygame.Color(0, 0, 0, 200)
     # Load a specific image from a specific rectangle
 
     def image_at(self, rectangle, colorkey=None):

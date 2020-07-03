@@ -1,12 +1,12 @@
 import spritesheet
+import pygame.surface
+from map_objects import tile_types
 
 
 def render_entities(con, entities, tile_size=16):
     # Draw all entities in the list
     for _ent in entities:
         draw_entity(con, _ent, tile_size)
-
-    #libtcod.console_blit(con, 0, 0, screen_width, screen_height, 0, 0, 0)
 
 
 def draw_entity(con, entity, tile_size=16):
@@ -30,12 +30,27 @@ def render_map(con, game_map, sheets, sprites, tile_size=16):
 
     for y in range(game_map.height):
         for x in range(game_map.width):
-            wall = game_map.tiles[x][y].block_sight
+            # get tile info for rendering
+            tile = game_map.tiles[x][y]
+            explored = game_map.explored[x][y]
+            visible = game_map.visible[x][y]
 
-            if wall:
-                draw_tile(con, x, y, wall_sprite_image, tile_size)
-            else:
-                draw_tile(con, x, y, floor_sprite_image, tile_size)
+            # if it's not explored, we don't show it at all
+            if explored:
+                if tile == tile_types.wall:
+                    draw_tile(con, x, y, wall_sprite_image, tile_size)
+                else:
+                    draw_tile(con, x, y, floor_sprite_image, tile_size)
+
+                # if it's not currently in LOS, we draw grey over it.
+                if not visible:
+                    darken = pygame.Surface(
+                        (tile_size, tile_size)).convert_alpha()
+                    darken.fill(sheets.get(
+                        wall_sprite_data.get("sheet")).empty)
+                    darken.fill(sheets.get(
+                        wall_sprite_data.get("sheet")).darkened)
+                    draw_tile(con, x, y, darken, tile_size)
 
 
 def draw_tile(con, x, y, tile, tile_size):
