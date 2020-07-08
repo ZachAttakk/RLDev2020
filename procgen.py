@@ -8,6 +8,9 @@ from map_objects.game_map import GameMap
 from map_objects import tile_types
 import entity_factories
 
+if TYPE_CHECKING:
+    from engine import Engine
+
 
 class RectangularRoom:
     def __init__(self, x: int, y: int, width: int, height: int):
@@ -56,10 +59,13 @@ def generate_dungeon(max_rooms: int,
                      map_width: int,
                      map_height: int,
                      monsters_per_room: int,
-                     player: Entity) -> GameMap:
+                     engine: Engine) -> GameMap:
+    """Generates a dungeon map"""
 
+    # get the player
+    player = engine.PLAYER
     # make blank dungeon
-    dungeon = GameMap(map_width, map_height, entities=[player])
+    dungeon = GameMap(engine, map_width, map_height, entities=[player])
 
     # list that will contain our rooms
     rooms: List[RectangularRoom] = []
@@ -89,7 +95,7 @@ def generate_dungeon(max_rooms: int,
         # connect all the rooms, one by one in a line
 
         if len(rooms) == 0:  # first room, place player here
-            player.place(new_room.center)
+            player.place(new_room.center, dungeon)
         else:  # all rooms after the first
             # Dig out a tunnel between this and the previous room
             # index -1 gets the last item in a list

@@ -14,13 +14,15 @@ if TYPE_CHECKING:
 
 
 class GameMap:
-    def __init__(self, width, height, entities: Iterable[Entity] = ()):
+    def __init__(self, engine: Engine, width: int, height: int, entities: Iterable[Entity] = ()):
         self.width, self.height = width, height
 
+        self.engine = engine
         self.entities = set(entities)
 
         self.tiles = np.full(
             (width, height), fill_value=tile_types.wall, order="F")
+
         self.visible = np.full(
             (width, height), fill_value=False, order="F")  # visible tiles
         self.explored = np.full(
@@ -35,3 +37,4 @@ class GameMap:
         for entity in self.entities:
             if entity.blocks_movement and entity.position == pos:
                 return entity
+        return None

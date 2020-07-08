@@ -1,4 +1,6 @@
 '''Engine file'''
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from typing import Iterable
 from tcod.map import compute_fov
 import pygame
@@ -10,27 +12,21 @@ from map_objects.game_map import GameMap
 import event_handlers
 import render_functions
 
+if TYPE_CHECKING:
+    from entity import Entity
+    from map_objects.game_map import GameMap
+
 
 class Engine:
-    def __init__(self, game_map: GameMap, player: Entity):
-        self.GAMEMAP = game_map
+    """Vanilla engine class"""
+
+    game_map: GameMap
+
+    def __init__(self, player: Entity):
         self.PLAYER = player
         self.spritesheets = spritesheet.get_sheets(CONFIG.SpriteSheets)
-        self.update_fov()
-
-    def handle_events(self, events: Iterable[pygame.event.EventType]):
-        for event in events:
-            action = event_handlers.handle_event(event)
-            if action is None:
-                continue
-            # do the thing.
-            # actions will handle their own validation
-            action.perform(self, self.PLAYER)
-
-            # let the baddies go
-            self.handle_enemy_turns()
-            # update FOV
-            self.update_fov()
+        self.eventhandler: event_handlers.EventHandler = event_handlers.EventHandler(
+            self)
 
     def handle_enemy_turns(self) -> None:
         for entity in self.GAMEMAP.entities - {self.PLAYER}:

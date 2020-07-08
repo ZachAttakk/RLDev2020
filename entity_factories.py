@@ -1,6 +1,9 @@
 from entity import Entity
 from config import Config as CONFIG
 
-player = Entity(CONFIG.Sprites.get("player"), "Player", True)
-blue = Entity(CONFIG.Sprites.get("blue"), "Blue", True)
-yellow = Entity(CONFIG.Sprites.get("yellow"), "Yellow", True)
+player = Entity(sprite=CONFIG.Sprites.get("player"),
+                name="Player", blocks_movement=True)
+blue = Entity(sprite=CONFIG.Sprites.get("blue"),
+              name="Blue", blocks_movement=True)
+yellow = Entity(sprite=CONFIG.Sprites.get("yellow"),
+                name="Yellow", blocks_movement=True)
