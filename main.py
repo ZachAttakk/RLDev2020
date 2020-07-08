@@ -1,11 +1,12 @@
 
 import pygame
 import spritesheet
+import copy
 
-from config import Config
 from engine import Engine
-from entity import Entity
 from procgen import generate_dungeon
+from config import Config as CONFIG
+import entity_factories
 
 
 def main() -> None:
@@ -14,27 +15,19 @@ def main() -> None:
     # What better place than here, what better time than now.
     pygame.init()
 
-    # Grab config
-    CONFIG = Config()
-
     # get surface size
-    scale = CONFIG.Game.get("scale")
+    scale = CONFIG.Display.get("scale")
 
     # make main surface
     surface_main = pygame.display.set_mode(
-        size=(int(CONFIG.Game["game_width"] * scale), int(CONFIG.Game["game_height"] * scale)))
+        size=(int(CONFIG.Display.get("game_width") * scale), int(CONFIG.Display.get("game_height") * scale)))
 
     # preload sprite sheets
     spritesheets = spritesheet.get_sheets(CONFIG.SpriteSheets)
 
     # make player and rando NPC
     # TODO: Magic numbers!
-    player = Entity(spritesheets.get(CONFIG.Sprites.get("player").get(
-        "sheet")).sprite_at(CONFIG.Sprites.get("player").get("values")), (7, 5))
-    npc = Entity(spritesheets.get(CONFIG.Sprites.get("npc").get(
-        "sheet")).sprite_at(CONFIG.Sprites.get("npc").get("values")), (3, 3))
-
-    entities = [player, npc]
+    player = copy.deepcopy(entity_factories.player)
 
     # generate map
     # max_rooms, room_min_size, room_max_size, map_width, map_height, player)
@@ -43,9 +36,10 @@ def main() -> None:
                                 CONFIG.Game.get("room_size_max"),
                                 CONFIG.Game.get("map_width"),
                                 CONFIG.Game.get("map_height"),
+                                CONFIG.Game.get("monsters_per_room"),
                                 player)
 
-    engine = Engine(entities, game_map, player, CONFIG)
+    engine = Engine(game_map, player)
 
     # gobal quit flag
     should_quit = False

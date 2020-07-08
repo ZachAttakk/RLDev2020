@@ -1,27 +1,38 @@
 """Entity component basic class"""
+from __future__ import annotations
+
 from pygame.surface import Surface
-from typing import Tuple
+from typing import Tuple, TypeVar, TYPE_CHECKING
+import copy
+
+if TYPE_CHECKING:
+    from map_objects.game_map import GameMap
+
+T = TypeVar("T", bound="Entity")
 
 
 class Entity:
     """Basic entity object"""
 
-    def __init__(self, sprite=None, pos=(0, 0)):
-        """Create new entity with position and tile sprite
+    def __init__(self,
+                 sprite: dict,
+                 name: str = "<Unnamed>",
+                 blocks_movement: bool = False,
+                 ):
+        """Create new entity with position and tile sprite"""
 
-        Args:
-            sprite (surface): sprite image
-            pos (tuple, optional): Initial position of entity. Defaults to (0, 0).
-        """
-
-        self.pos = list(pos) or [0, 0]
-        if sprite is not None:
-            if isinstance(sprite, Surface):
-                self.sprite = sprite
-            else:
-                # FIXME: What do we do if no sprite is passed?
-                pass
+        self.pos = [0, 0]
         self.sprite = sprite
+
+        self.name = name
+        self.blocks_movement = blocks_movement
+
+    def spawn(self: T, gamemap: GameMap, pos: Tuple[int, int] = (0, 0)) -> T:
+        """Spawn a copy of this instance at the gives location."""
+        clone = copy.deepcopy(self)
+        clone.pos = pos
+        gamemap.entities.add(clone)
+        return clone
 
     def move(self, delta=(0, 0)):
         """Move entity by an offset

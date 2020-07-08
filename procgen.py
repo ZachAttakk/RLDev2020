@@ -6,6 +6,7 @@ import tcod
 from entity import Entity
 from map_objects.game_map import GameMap
 from map_objects import tile_types
+import entity_factories
 
 
 class RectangularRoom:
@@ -54,10 +55,11 @@ def generate_dungeon(max_rooms: int,
                      room_max_size: int,
                      map_width: int,
                      map_height: int,
+                     monsters_per_room: int,
                      player: Entity) -> GameMap:
 
     # make blank dungeon
-    dungeon = GameMap(map_width, map_height)
+    dungeon = GameMap(map_width, map_height, entities=[player])
 
     # list that will contain our rooms
     rooms: List[RectangularRoom] = []
@@ -94,11 +96,31 @@ def generate_dungeon(max_rooms: int,
             for x, y in tunnel_between(rooms[-1].center, new_room.center):
                 dungeon.tiles[x, y] = tile_types.floor
 
+        # add baddies
+        place_entities(new_room, dungeon, monsters_per_room)
+
         # finally, add the new room to the list so we can test future rooms against it
         rooms.append(new_room)
 
     # We've reached the max number of rooms
     return dungeon
+
+
+def place_entities(room: RectangularRoom, dungeon: GameMap, max_monsters_per_room: int) -> None:
+    # how many monsters?
+    number_of_monsters = random.randint(0, max_monsters_per_room)
+
+    # place that many
+    for i in range(number_of_monsters):
+        x = random.randint(room.x_1 + 1, room.x_2 - 1)
+        y = random.randint(room.y_1 + 1, room.y_2 - 1)
+
+        prospective_pos = (x, y)
+        if not any(entity.position == prospective_pos for entity in dungeon.entities):
+            if random.random() < 0.8:
+                entity_factories.blue.spawn(dungeon, (x, y))
+            else:
+                entity_factories.yellow.spawn(dungeon, (x, y))
 
 
 def tunnel_between(

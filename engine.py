@@ -1,23 +1,21 @@
 '''Engine file'''
-from typing import Set, Iterable
+from typing import Iterable
 from tcod.map import compute_fov
 import pygame
 import spritesheet
 
-from config import Config
+from config import Config as CONFIG
 from entity import Entity
 from map_objects.game_map import GameMap
 import event_handlers
-from render_functions import render_entities, render_map
+import render_functions
 
 
 class Engine:
-    def __init__(self, entities: Set[Entity], game_map: GameMap, player: Entity, config: Config = None):
-        self.ENTITIES = entities
+    def __init__(self, game_map: GameMap, player: Entity):
         self.GAMEMAP = game_map
         self.PLAYER = player
-        self.CONFIG = config
-        self.spritesheets = spritesheet.get_sheets(config.SpriteSheets)
+        self.spritesheets = spritesheet.get_sheets(CONFIG.SpriteSheets)
         self.update_fov()
 
     def handle_events(self, events: Iterable[pygame.event.EventType]):
@@ -29,15 +27,22 @@ class Engine:
             # actions will handle their own validation
             action.perform(self, self.PLAYER)
 
+            # let the baddies go
+            self.handle_enemy_turns()
             # update FOV
             self.update_fov()
+
+    def handle_enemy_turns(self) -> None:
+        for entity in self.GAMEMAP.entities - {self.PLAYER}:
+            print(f"The {entity.name} wanted to do a thing, but it forgot.")
 
     def update_fov(self) -> None:
         """Recompute the visible area based on the player's point of view."""
 
         # TODO: Magic numbers!
         self.GAMEMAP.visible[:] = compute_fov(
-            self.GAMEMAP.tiles["transparent"], self.PLAYER.position, radius=8
+            self.GAMEMAP.tiles["transparent"], self.PLAYER.position,
+            radius=CONFIG.Game.get("fov_radius")
         )
         # if a tile is visible it should be added to explored
         self.GAMEMAP.explored |= self.GAMEMAP.visible
@@ -49,23 +54,23 @@ class Engine:
         surface_main = console
 
         surface_map = pygame.surface.Surface(
-            size=(self.CONFIG.Game.get("game_width"),
-                  self.CONFIG.Game.get("game_height")),
+            size=(CONFIG.Display.get("game_width"),
+                  CONFIG.Display.get("game_height")),
             flags=surface_main.get_flags()).convert_alpha()
 
         # clear screen
-        surface_main.fill(tuple(self.CONFIG.Colors.get("black")))
+        surface_map.fill(tuple(CONFIG.Colours.get("black")))
 
         # draw map
-        render_map(surface_map, self.GAMEMAP, self.spritesheets,
-                   self.CONFIG.Sprites, self.CONFIG.Game.get("tile_size"))
+        render_functions.render_map(surface_map, self.GAMEMAP, self.spritesheets,
+                                    CONFIG.Sprites, CONFIG.Display.get("tile_size"))
 
-        # draw entities
-        render_entities(surface_map, self.ENTITIES,
-                        self.CONFIG.Game.get("tile_size"))
+        # render scanlines if there should be any
+        if CONFIG.Display.get("scanline_opacity") not in [0, None]:
+            render_functions.render_scanlines(surface_map)
 
         # Now we scale up and blit to the screen.
-        _scale = self.CONFIG.Game.get("scale")
+        _scale = CONFIG.Display.get("scale")
         if _scale != 1.0:
             _scaled_size = list(surface_map.get_size())
             _scaled_size = [int(i * _scale) for i in _scaled_size]

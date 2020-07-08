@@ -38,14 +38,35 @@ class ActionQuit(Action):
         raise SystemExit()
 
 
-class ActionMove(Action):
-    '''Action that moves the player'''
-
+class ActionWithDirection(Action):
     def __init__(self, d_x: int, d_y: int):
         super().__init__()
 
         self.d_x = d_x
         self.d_y = d_y
+
+    def perform(self, engine: Engine, entity: Entity):
+        return super().perform(engine, entity)
+
+
+class ActionBump(ActionWithDirection):
+    """Action that checks whether to attack or move"""
+
+    def perform(self, engine: Engine, entity: Entity):
+        # find destination tile
+        dest_x, dest_y = entity.position
+        dest_x += self.d_x
+        dest_y += self.d_y
+
+        if engine.GAMEMAP.get_blocking_entity_at((dest_x, dest_y)):
+            return ActionMelee(self.d_x, self.d_y).perform(engine, entity)
+
+        else:
+            return ActionMove(self.d_x, self.d_y).perform(engine, entity)
+
+
+class ActionMove(ActionWithDirection):
+    '''Action that moves the player'''
 
     def perform(self, engine: Engine, entity: Entity) -> None:
 
@@ -63,6 +84,23 @@ class ActionMove(Action):
         # check if the tile is walkable
         elif not engine.GAMEMAP.tiles["walkable"][dest_x, dest_y]:
             validation = False  # destination is blocked by a tile
+        elif engine.GAMEMAP.get_blocking_entity_at((dest_x, dest_y)):
+            validation = False  # destination is occupied by blocking entity
 
         if validation:
             entity.move((self.d_x, self.d_y))  # delta is tuple
+
+
+class ActionMelee(ActionWithDirection):
+    """Action that attacks the entity in a space, but doesn't move"""
+
+    def perform(self, engine: Engine, entity: Entity):
+        # find destination tile
+        dest_x, dest_y = entity.position
+        dest_x += self.d_x
+        dest_y += self.d_y
+        target = engine.GAMEMAP.get_blocking_entity_at((dest_x, dest_y))
+        if not target:
+            return  # No entity to attack
+
+        print(f"You kick the {target.name}, much to its annoyance!")

@@ -2,7 +2,7 @@
 '''event handler code'''
 from typing import Optional
 import pygame.event
-from actions import Action, ActionEscape, ActionMove, ActionEscape, ActionQuit
+from actions import Action, ActionEscape, ActionMove, ActionEscape, ActionQuit, ActionBump
 
 
 def handle_event(event) -> Optional[Action]:
@@ -18,13 +18,13 @@ def handle_event(event) -> Optional[Action]:
     # Movement keys and escape to quit
     if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_UP:
-            response = ActionMove(0, -1)
+            response = ActionBump(0, -1)
         elif event.key == pygame.K_DOWN:
-            response = ActionMove(0, 1)
+            response = ActionBump(0, 1)
         elif event.key == pygame.K_LEFT:
-            response = ActionMove(-1, 0)
+            response = ActionBump(-1, 0)
         elif event.key == pygame.K_RIGHT:
-            response = ActionMove(1, 0)
+            response = ActionBump(1, 0)
         elif event.key == pygame.K_ESCAPE:
             response = ActionEscape()
 
