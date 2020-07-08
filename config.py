@@ -59,7 +59,7 @@ class Config:
         "fullscreen": False,
         "game_height": 320,
         "game_width": 400,
-        "scale": 2.0,
+        "scale": 1.0,
         "tile_size": 16,
         "scanline_opacity": 20,
         "scanline_spacing": 3,
