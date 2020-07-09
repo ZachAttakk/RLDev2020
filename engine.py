@@ -2,6 +2,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Iterable
+import numpy as np
 from tcod.map import compute_fov
 import pygame
 import spritesheet
@@ -9,6 +10,7 @@ import spritesheet
 from config import Config as CONFIG
 from entity import Entity
 from map_objects.game_map import GameMap
+from message_log import MessageLog
 import event_handlers
 import render_functions
 
@@ -22,15 +24,29 @@ class Engine:
 
     game_map: GameMap
 
-    def __init__(self, player: Entity):
+    def __init__(self, player: Actor):
         self.PLAYER = player
         self.spritesheets = spritesheet.get_sheets(CONFIG.SpriteSheets)
-        self.eventhandler: event_handlers.EventHandler = event_handlers.EventHandler(
+        self.fonts = self.load_fonts(CONFIG.Fonts)
+        self.message_log = MessageLog()
+        self.eventhandler: event_handlers.EventHandler = event_handlers.MainGameEventHandler(
             self)
 
+    @staticmethod
+    def load_fonts(fonts):
+        loaded_fonts = {}
+        for i in fonts:
+            # for each font in the list, grab the dictionary under it
+            _ff = fonts.get(i)
+            # make a font from it, add it to the dictionary that's being returned
+            loaded_fonts[i] = pygame.font.Font(_ff.get("path"), 8)
+            # and send them back
+        return loaded_fonts
+
     def handle_enemy_turns(self) -> None:
-        for entity in self.GAMEMAP.entities - {self.PLAYER}:
-            print(f"The {entity.name} wanted to do a thing, but it forgot.")
+        for entity in set(self.GAMEMAP.actors) - {self.PLAYER}:
+            if entity.ai:
+                entity.ai.perform()
 
     def update_fov(self) -> None:
         """Recompute the visible area based on the player's point of view."""
@@ -55,24 +71,25 @@ class Engine:
             flags=surface_main.get_flags()).convert_alpha()
 
         # clear screen
-        surface_map.fill(tuple(CONFIG.Colours.get("black")))
+        surface_map.fill(CONFIG.get_colour("black"))
 
         # draw map
         render_functions.render_map(surface_map, self.GAMEMAP, self.spritesheets,
                                     CONFIG.Sprites, CONFIG.Display.get("tile_size"))
 
+        self.message_log.render_messages(
+            surface_map, (0, 45), width=40, height=5)
+        render_functions.render_bar(
+            surface_map, current_value=self.PLAYER.fighter.hp, max_value=self.PLAYER.fighter.max_hp, total_width=60, font=self.fonts.get("mini"))
+
+        # MAKE SURE THIS IS ALWAYS LAST IN RENDER ORDER
         # render scanlines if there should be any
         if CONFIG.Display.get("scanline_opacity") not in [0, None]:
             render_functions.render_scanlines(surface_map)
 
-        # Now we scale up and blit to the screen.
-        _scale = CONFIG.Display.get("scale")
-        if _scale != 1.0:
-            _scaled_size = list(surface_map.get_size())
-            _scaled_size = [int(i * _scale) for i in _scaled_size]
-            pygame.transform.scale(surface_map, tuple(
-                _scaled_size), surface_main).convert_alpha()
-        else:
-            surface_main.blit(surface_map, (0, 0))
+        # Now we blit to the screen.
+
+        surface_main.blit(surface_map, (0, 0))
+
         # Push to screen
         pygame.display.flip()

@@ -5,14 +5,13 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from engine import Engine
-    from entity import Entity
+    from entity import Actor, Entity
 
 
 class Action:
     '''Generic action'''
 
-    def __init__(self, entity: Entity):
-        super().__init__()
+    def __init__(self, entity: Actor):
         self.entity = entity
 
     @property
@@ -31,7 +30,8 @@ class Action:
 class ActionEscape(Action):
     '''Action that escapes whatever it's in'''
 
-    def __init__(self, entity):
+    def __init__(self):
+        """Space intentionally left blank"""
         pass
 
     # TODO: Make it escape whatever it's in
@@ -42,7 +42,8 @@ class ActionEscape(Action):
 class ActionQuit(Action):
     '''Action that quits the game'''
 
-    def __init__(self, entity):
+    def __init__(self):
+        """Space intentionally left blank"""
         pass
 
     def perform(self) -> None:
@@ -50,7 +51,7 @@ class ActionQuit(Action):
 
 
 class ActionWithDirection(Action):
-    def __init__(self, entity: Entity, d_x: int, d_y: int):
+    def __init__(self, entity: Actor, d_x: int, d_y: int):
         super().__init__(entity)
 
         self.d_x = d_x
@@ -69,6 +70,11 @@ class ActionWithDirection(Action):
         """Return the entity that's blocking this action, if any"""
         return self.engine.GAMEMAP.get_blocking_entity_at(self.dest_xy)
 
+    @property
+    def target_actor(self) -> Optionall[Actor]:
+        """Returns the actor at this action's destination"""
+        return self.engine.GAMEMAP.get_actor_at(self.dest_xy)
+
     def perform(self):
         return super().perform()
 
@@ -77,7 +83,7 @@ class ActionBump(ActionWithDirection):
     """Action that checks whether to attack or move"""
 
     def perform(self):
-        if self.blocking_entity:
+        if self.target_actor:
             return ActionMelee(self.entity, self.d_x, self.d_y).perform()
         else:
             return ActionMove(self.entity, self.d_x, self.d_y).perform()
@@ -111,8 +117,27 @@ class ActionMelee(ActionWithDirection):
     """Action that attacks the entity in a space, but doesn't move"""
 
     def perform(self):
-        target = self.blocking_entity
+        target = self.target_actor
         if not target:
             return  # No entity to attack
 
-        print(f"You kick the {target.name}, much to its annoyance!")
+        damage = self.entity.fighter.power - target.fighter.defense
+
+        attack_desc = f"{self.entity.name.capitalize()} attacks {target.name}"
+        if damage > 0:
+            print(f"{attack_desc} for {damage} hit points.")
+            target.fighter.hp -= damage
+        else:
+            print(f"{attack_desc} but does no damage.")
+
+
+class ActionWait(Action):
+    """Hurry up and do nothing"""
+
+    def __init__(self, entity):
+        """Space intentionally left blank"""
+        pass
+
+    def perform(self):
+        """Space intentionally left blank"""
+        pass

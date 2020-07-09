@@ -5,11 +5,13 @@
     """
 from __future__ import annotations
 
-from typing import Iterable, Optional, Tuple, TYPE_CHECKING
+from typing import Iterable, Iterator, Optional, Tuple, TYPE_CHECKING
 import numpy as np
 from map_objects import tile_types
+from entity import Actor
 
 if TYPE_CHECKING:
+    from engine import Engine
     from entity import Entity
 
 
@@ -28,6 +30,14 @@ class GameMap:
         self.explored = np.full(
             (width, height), fill_value=False, order="F")  # seen before tiles
 
+    @property
+    def actors(self) -> Iterator[Actor]:
+        """Iterate over this map's living actors"""
+        yield from (
+            entity for entity in self.entities
+            if isinstance(entity, Actor) and entity.is_alive
+        )
+
     def in_bounds(self, x: int, y: int) -> bool:
         """Return True if x and f are inside the bounds of the map."""
         return 0 <= x < self.width and 0 <= y < self.height
@@ -37,4 +47,10 @@ class GameMap:
         for entity in self.entities:
             if entity.blocks_movement and entity.position == pos:
                 return entity
+        return None
+
+    def get_actor_at(self, pos: Tuple[int, int]) -> Optional[Actor]:
+        for actor in self.actors:
+            if actor.position == pos:
+                return actor
         return None

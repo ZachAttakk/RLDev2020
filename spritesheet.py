@@ -36,7 +36,7 @@ class Spritesheet(object):
     empty = pygame.Color(0, 0, 0, 0)
     darkened = pygame.Color(0, 0, 0, 200)
 
-    def __init__(self, filename, tile_size=None, tile_gap=0):
+    def __init__(self, filename, tile_size=16, tile_gap=1):
         try:
             self.sheet = pygame.image.load(filename).convert_alpha()
         except pygame.error as message:
@@ -71,20 +71,14 @@ class Spritesheet(object):
                 for x in range(image_count)]
         return self.images_at(tups)
 
-    def sprite_at(self, pos, fgcolour=None, bgcolour=None, size=None, gap=None, ):
+    def sprite_at(self, sprite_data):
         "Loads sprite at position for the size of tile and gap between tiles provided"
 
-        # Sanity check the size and gap
-        if (size is None and self.tile_size is None):
-            raise SystemError("Spritesheet has no size: %s" % self.filename)
+        # extract fgcolour, bgcolour, values
+        fgcolour = sprite_data.get("fgcolour")
+        bgcolour = sprite_data.get("bgcolour")
 
-        # set spritesheet values if provided
-        # Theoretically this should always be the same once set
-        if size is not None:
-            self.tile_size = size
-        if gap is not None:
-            self.tile_gap = gap
-
+        pos = sprite_data.get("values") or (0, 0)
         # calculate pixel positions
         if pos[0] != 0:
             _x_pix = pos[0]*(self.tile_size+self.tile_gap)
@@ -109,7 +103,7 @@ class Spritesheet(object):
             _fg = pygame.Surface(
                 (self.tile_size, self.tile_size)).convert_alpha()
             if isinstance(fgcolour, str):
-                _fgcol = CONFIG.Colours.get(fgcolour)
+                _fgcol = CONFIG.get_colour(fgcolour)
             else:
                 _fgcol = pygame.Color(*fgcolour)
             _fg.fill(_fgcol)
@@ -121,7 +115,7 @@ class Spritesheet(object):
             _bg = pygame.Surface(
                 (self.tile_size, self.tile_size)).convert_alpha()
             if isinstance(bgcolour, str):
-                _bgcol = CONFIG.Colours.get(fgcolour)
+                _bgcol = CONFIG.get_colour(bgcolour)
             else:
                 _bgcol = pygame.Color(*bgcolour)
             _bg.fill(_bgcol)

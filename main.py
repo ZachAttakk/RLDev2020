@@ -15,12 +15,9 @@ def main() -> None:
     # What better place than here, what better time than now.
     pygame.init()
 
-    # get surface size
-    scale = CONFIG.Display.get("scale")
-
     # make main surface
     surface_main = pygame.display.set_mode(
-        size=(int(CONFIG.Display.get("game_width") * scale), int(CONFIG.Display.get("game_height") * scale)))
+        size=(int(CONFIG.Display.get("game_width")), int(CONFIG.Display.get("game_height"))), flags=pygame.SCALED | pygame.RESIZABLE)
 
     # make player and rando NPC
     # TODO: Magic numbers!
