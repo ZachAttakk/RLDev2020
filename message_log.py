@@ -39,18 +39,24 @@ class MessageLog:
             self.messages.append(Message(text, fg))
 
     @staticmethod
-    def render_messages(con: pygame.Surface, pos: Tuple[int, int], width: int, height: int, messages: Reversible[Message], font: pygame.font) -> None:
-        """Render the messages provided
-        The `messages` are rendered starting at the last message and working
-        backwards."""
+    def render_messages(size: Tuple[int, int],
+                        messages: Reversible[Message],
+                        font: pygame.font) -> None:
+        """Render the messages provided and return them on a surface
+        """
 
-        y_offset = height - 1
+        con = pygame.Surface(size).convert_alpha()
+        # start the first one 2 pixels off the bottom
+        y_offset = size[1] - 10
 
         for message in reversed(messages):
-            for line in reversed(textwrap.wrap(messages.full_text, width/8)):
-                print_pos = np.add(pos, (0, y_offset))
-            render_functions.render_text(
-                con, line, print_pos, message.fg_col, font)
-            y_offset -= 8
+            for line in reversed(textwrap.wrap(message.full_text, int(size[0]))):
+                print_pos = (0, y_offset)
+                render_functions.render_text(
+                    con, line, print_pos, message.fg_col, font)
+                y_offset -= 8
+
             if y_offset < 0:
-                return  # log is full
+                break  # log is full
+
+        return con

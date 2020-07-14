@@ -4,6 +4,7 @@ import spritesheet
 import copy
 
 from engine import Engine
+from actions import GoFullscreenError
 from procgen import generate_dungeon
 from config import Config as CONFIG
 import entity_factories
@@ -17,7 +18,9 @@ def main() -> None:
 
     # make main surface
     surface_main = pygame.display.set_mode(
-        size=(int(CONFIG.Display.get("game_width")), int(CONFIG.Display.get("game_height"))), flags=pygame.SCALED | pygame.RESIZABLE)
+        size=(int(CONFIG.Display.get("game_width")),
+              int(CONFIG.Display.get("game_height"))),
+        flags=pygame.SCALED | pygame.RESIZABLE)
 
     # make player and rando NPC
     # TODO: Magic numbers!
@@ -25,6 +28,11 @@ def main() -> None:
 
     # start the engine
     engine = Engine(player)
+
+    # test message log.
+    engine.message_log.add_message("Welcome to the game!")
+    engine.message_log.add_message("These are test messages to see how the text wrapping will work.")
+
     # generate map
     # max_rooms, room_min_size, room_max_size, map_width, map_height, player)
     engine.GAMEMAP = generate_dungeon(CONFIG.Game.get("rooms_max"),
@@ -50,6 +58,9 @@ def main() -> None:
         except (SystemExit):
             should_quit = True
             continue
+        except (GoFullscreenError):
+            # pygame.display.set_mode
+            pass
 
         # print to screen
         engine.render(surface_main)

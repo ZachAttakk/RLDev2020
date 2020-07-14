@@ -70,8 +70,9 @@ def render_text(con, text, position: Tuple[int, int], fg_col, fonts):
         font = fonts.get("mini")
     else:
         font = fonts
-        text_surface = font.render(
-            text, False, CONFIG.get_colour(fg_col))
+
+    text_surface = font.render(
+        text, False, CONFIG.get_colour(fg_col))
     con.blit(text_surface, position)
 
 
@@ -109,6 +110,7 @@ def render_bar(con, current_value, max_value, total_width, font) -> None:
     if bar_width > 0:
         pygame.draw.rect(_bar, CONFIG.get_colour(
             "bar_filled"), pygame.Rect(0, 0, bar_width, 10))
-    render_text(_bar, f"HP: {current_value}/{max_value}", (1, 0), font)
+    render_text(_bar, f"HP: {current_value}/{max_value}", (1, 0), CONFIG.get_colour(
+        "white"), font)
 
     con.blit(_bar, (0, 0))

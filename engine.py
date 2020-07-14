@@ -65,8 +65,9 @@ class Engine:
         # global use of SURFACE_MAIN
         surface_main = console
 
+        # for the time being the map will always be square and the whole thing will show
         surface_map = pygame.surface.Surface(
-            size=(CONFIG.Display.get("game_width"),
+            size=(CONFIG.Display.get("game_height"),
                   CONFIG.Display.get("game_height")),
             flags=surface_main.get_flags()).convert_alpha()
 
@@ -77,10 +78,16 @@ class Engine:
         render_functions.render_map(surface_map, self.GAMEMAP, self.spritesheets,
                                     CONFIG.Sprites, CONFIG.Display.get("tile_size"))
 
-        self.message_log.render_messages(
-            surface_map, (0, 45), width=40, height=5)
-        render_functions.render_bar(
-            surface_map, current_value=self.PLAYER.fighter.hp, max_value=self.PLAYER.fighter.max_hp, total_width=60, font=self.fonts.get("mini"))
+        # log will take up the rest of the space on the right
+        log_size = (
+            int(CONFIG.Display.get("game_width") - CONFIG.Display.get("game_height")),
+            CONFIG.Display.get("game_height"))
+
+        surface_log = self.message_log.render_messages(
+            size=log_size, messages=self.message_log.messages, font=self.fonts.get("mini"))
+
+        render_functions.render_bar(surface_map, current_value=self.PLAYER.fighter.hp,
+                                    max_value=self.PLAYER.fighter.max_hp, total_width=60, font=self.fonts.get("mini"))
 
         # MAKE SURE THIS IS ALWAYS LAST IN RENDER ORDER
         # render scanlines if there should be any
@@ -90,6 +97,8 @@ class Engine:
         # Now we blit to the screen.
 
         surface_main.blit(surface_map, (0, 0))
+        # to the right of the map
+        surface_main.blit(surface_log, (surface_map.get_width(), 0))
 
         # Push to screen
         pygame.display.flip()

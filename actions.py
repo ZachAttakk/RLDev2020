@@ -8,6 +8,10 @@ if TYPE_CHECKING:
     from entity import Actor, Entity
 
 
+class GoFullscreenError(Exception):
+    pass
+
+
 class Action:
     '''Generic action'''
 
@@ -37,6 +41,17 @@ class ActionEscape(Action):
     # TODO: Make it escape whatever it's in
     def perform(self) -> None:
         raise SystemExit()
+
+
+class ActionFullscreen(Action):
+    '''Action that changes from fullscreen to window and vice versa'''
+
+    def __init__(self):
+        """Space intentionally left blank"""
+        pass
+
+    def perform(self) -> None:
+        raise GoFullscreenError()
 
 
 class ActionQuit(Action):
@@ -124,11 +139,18 @@ class ActionMelee(ActionWithDirection):
         damage = self.entity.fighter.power - target.fighter.defense
 
         attack_desc = f"{self.entity.name.capitalize()} attacks {target.name}"
+
+        # TODO: Set text colour for messages
+        # if self.entity is self.engine.player:
+        #     attack_color = color.player_atk
+        # else:
+        #     attack_color = color.enemy_atk
+
         if damage > 0:
-            print(f"{attack_desc} for {damage} hit points.")
+            self.engine.message_log.add_message(f"{attack_desc} for {damage} hit points.")
             target.fighter.hp -= damage
         else:
-            print(f"{attack_desc} but does no damage.")
+            self.engine.message_log.add_message(f"{attack_desc} but does no damage.")
 
 
 class ActionWait(Action):

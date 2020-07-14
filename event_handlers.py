@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
 from typing import Optional
 import pygame.event
-from actions import Action, ActionEscape, ActionMove, ActionEscape, ActionQuit, ActionBump, ActionWait
+from actions import Action, ActionEscape, ActionMove, ActionEscape, ActionQuit, ActionBump, ActionWait, ActionFullscreen
 
 from keyboard_layout import MOVE_KEYS, WAIT_KEYS
 
@@ -61,6 +61,8 @@ class MainGameEventHandler(EventHandler):
                 response = ActionWait(player)
             elif event.key == pygame.K_ESCAPE:
                 response = ActionEscape()
+            elif event.key == pygame.K_F11:
+                response = ActionFullscreen()
 
         # Send back the response
         if response is not None:
@@ -94,6 +96,8 @@ class GameOverEventHandler(EventHandler):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 response = ActionEscape()
+            elif event.key == pygame.K_F11:
+                response = ActionFullscreen()
 
         # Send back the response
         if response is not None:
