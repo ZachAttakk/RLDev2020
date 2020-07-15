@@ -1,10 +1,16 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Tuple
-import spritesheet
+import numpy as np
+
 import pygame
+import spritesheet
 from config import Config as CONFIG
 from map_objects import tile_types
+
+if TYPE_CHECKING:
+    from engine import Engine
+    from map_objects.game_map import GameMap
 
 
 def draw_entity(con, entity, image, tile_size=16):
@@ -64,6 +70,23 @@ def render_map(con, game_map, sheets, sprites, tile_size=16):
             draw_entity(con, _ent, ent_sprite_image, tile_size)
 
 
+def render_names(con, game_map, position, font, tile_size=16):
+    """Renders entity names at a position on the map, at that position on the map"""
+
+    # first transpose the given pixel position to map position
+    # TODO: When we implement offsets on the map, we'll have to take those into account
+    tile_x, tile_y = position
+    tile_x = int(tile_x/tile_size)
+    tile_y = int(tile_y/tile_size)
+
+    # get the entities at that position
+    names = game_map.get_names_at_location(tile_x, tile_y)
+    if names:
+        # offset name so it's not behind the mouse
+        y_pos = position[1] - font.get_linesize()
+        render_outlined_text(con, names, (position[0], y_pos), CONFIG.get_colour("white"), font)
+
+
 def render_text(con, text, position: Tuple[int, int], fg_col, fonts):
 
     if isinstance(fonts, dict):
@@ -74,6 +97,19 @@ def render_text(con, text, position: Tuple[int, int], fg_col, fonts):
     text_surface = font.render(
         text, False, CONFIG.get_colour(fg_col))
     con.blit(text_surface, position)
+
+
+def render_outlined_text(con, text, position: Tuple[int, int], fg_col, fonts):
+    # 9 positions, either way of the middle
+    for x in range(-1, 2):
+        for y in range(-1, 2):
+            temp_x, temp_y = position
+            temp_x += x
+            temp_y += y
+            render_text(con, text, (temp_x, temp_y), "black", fonts)
+
+    # and the actual text...
+    render_text(con, text, position, fg_col, fonts)
 
 
 def render_scanlines(con):

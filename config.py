@@ -82,8 +82,8 @@ class Config:
         }
     }
     Game = {
-        "map_width": 24,
-        "map_height": 24,
+        "map_width": 22,
+        "map_height": 22,
         "room_size_max": 6,
         "room_size_min": 3,
         "rooms_max": 10,
@@ -92,8 +92,8 @@ class Config:
     }
     Display = {
         "fullscreen": False,
-        "game_height": 384,
-        "game_width": 683,
+        "game_height": 360,
+        "game_width": 514,
         "tile_size": 16,
         "scanline_opacity": 20,
         "scanline_spacing": 3,

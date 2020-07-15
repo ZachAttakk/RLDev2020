@@ -38,6 +38,16 @@ class GameMap:
             if isinstance(entity, Actor) and entity.is_alive
         )
 
+    def get_names_at_location(self, x: int, y: int) -> str:
+        if not self.in_bounds(x, y) or not self.visible[x, y]:
+            return ""
+
+        names = ", ".join(
+            entity.name for entity in self.entities if entity.position == (x, y)
+        )
+
+        return names.capitalize()
+
     def in_bounds(self, x: int, y: int) -> bool:
         """Return True if x and f are inside the bounds of the map."""
         return 0 <= x < self.width and 0 <= y < self.height

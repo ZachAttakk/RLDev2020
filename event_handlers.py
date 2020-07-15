@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
 from typing import Optional
 import pygame.event
-from actions import Action, ActionEscape, ActionMove, ActionEscape, ActionQuit, ActionBump, ActionWait, ActionFullscreen
+from actions import Action, ActionEscape, ActionMove, ActionEscape, ActionQuit, ActionBump, ActionWait, ActionFullscreen, ActionMouseMove
 
 from keyboard_layout import MOVE_KEYS, WAIT_KEYS
 
@@ -33,8 +33,7 @@ class MainGameEventHandler(EventHandler):
                     continue
                 # do the thing.
                 # actions will handle their own validation
-                action.perform()
-                something_happened = True
+                something_happened = action.perform()
 
             if something_happened:
                 # let the baddies go
@@ -63,6 +62,9 @@ class MainGameEventHandler(EventHandler):
                 response = ActionEscape()
             elif event.key == pygame.K_F11:
                 response = ActionFullscreen()
+
+        if event.type == pygame.MOUSEMOTION:
+            response = ActionMouseMove(self.engine, pygame.mouse.get_pos())
 
         # Send back the response
         if response is not None:

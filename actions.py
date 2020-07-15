@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from config import Config as CONFIG
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -23,10 +24,11 @@ class Action:
         """Return engine for this action"""
         return self.entity.GAMEMAP.engine
 
-    def perform(self) -> None:
+    def perform(self) -> bool:
         """
         REQUIRED OVERRIDE
         Perform this action with the entities needed to determine its scope.
+        Returns True if action takes a turn
         """
         raise NotImplementedError()
 
@@ -86,12 +88,33 @@ class ActionWithDirection(Action):
         return self.engine.GAMEMAP.get_blocking_entity_at(self.dest_xy)
 
     @property
-    def target_actor(self) -> Optionall[Actor]:
+    def target_actor(self) -> Optional[Actor]:
         """Returns the actor at this action's destination"""
         return self.engine.GAMEMAP.get_actor_at(self.dest_xy)
 
     def perform(self):
         return super().perform()
+
+
+class ActionWithPosition(Action):
+    """Action that has a position"""
+
+    def __init__(self, position: Tuple[int:int]):
+        self.x = position[0]
+        self.y = position[1]
+
+    @property
+    def position(self):
+        return self.x, self.y
+
+
+class ActionMouseMove(ActionWithPosition):
+    def __init__(self, engine: Engine, position: Tuple[int, int]):
+        super().__init__(position)
+        self.engineref = engine
+
+    def perform(self):
+        self.engineref.mouse_position = self.position
 
 
 class ActionBump(ActionWithDirection):
@@ -127,6 +150,9 @@ class ActionMove(ActionWithDirection):
         if validation:
             self.entity.move((self.d_x, self.d_y))  # delta is tuple
 
+        # return true to trigger player turn
+        return True
+
 
 class ActionMelee(ActionWithDirection):
     """Action that attacks the entity in a space, but doesn't move"""
@@ -140,17 +166,19 @@ class ActionMelee(ActionWithDirection):
 
         attack_desc = f"{self.entity.name.capitalize()} attacks {target.name}"
 
-        # TODO: Set text colour for messages
-        # if self.entity is self.engine.player:
-        #     attack_color = color.player_atk
-        # else:
-        #     attack_color = color.enemy_atk
+        if self.entity is self.engine.PLAYER:
+            attack_color = CONFIG.get_colour("player_atk")
+        else:
+            attack_color = CONFIG.get_colour("enemy_atk")
 
         if damage > 0:
-            self.engine.message_log.add_message(f"{attack_desc} for {damage} hit points.")
+            self.engine.message_log.add_message(f"{attack_desc} for {damage} HP.", attack_color)
             target.fighter.hp -= damage
         else:
-            self.engine.message_log.add_message(f"{attack_desc} but does no damage.")
+            self.engine.message_log.add_message(f"{attack_desc} but does no damage.", attack_color)
+
+        # return true to trigger player turn
+        return True
 
 
 class ActionWait(Action):
@@ -161,5 +189,6 @@ class ActionWait(Action):
         pass
 
     def perform(self):
-        """Space intentionally left blank"""
-        pass
+        """Return True to trigger player turn"""
+        # return true to trigger player turn
+        return True

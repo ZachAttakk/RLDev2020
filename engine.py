@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 class Engine:
-    """Vanilla engine class"""
+    """Engine class"""
 
     game_map: GameMap
 
@@ -31,6 +31,7 @@ class Engine:
         self.message_log = MessageLog()
         self.eventhandler: event_handlers.EventHandler = event_handlers.MainGameEventHandler(
             self)
+        self.mouse_position = (0, 0)
 
     @staticmethod
     def load_fonts(fonts):
@@ -78,6 +79,9 @@ class Engine:
         render_functions.render_map(surface_map, self.GAMEMAP, self.spritesheets,
                                     CONFIG.Sprites, CONFIG.Display.get("tile_size"))
 
+        # render names of things under the mouse
+        render_functions.render_names(surface_map, self.GAMEMAP, self.mouse_position, self.fonts.get("mini"))
+
         # log will take up the rest of the space on the right
         log_size = (
             int(CONFIG.Display.get("game_width") - CONFIG.Display.get("game_height")),
@@ -95,7 +99,6 @@ class Engine:
             render_functions.render_scanlines(surface_map)
 
         # Now we blit to the screen.
-
         surface_main.blit(surface_map, (0, 0))
         # to the right of the map
         surface_main.blit(surface_log, (surface_map.get_width(), 0))
