@@ -18,10 +18,10 @@ T = TypeVar("T", bound="Entity")
 class Entity:
     """Basic entity object"""
 
-    GAMEMAP: GameMap
+    parent: GameMap
 
     def __init__(self, *,
-                 gamemap: Optional[GameMap] = None,
+                 parent: Optional[GameMap] = None,
                  sprite: Optional[dict] = None,
                  name: str = "<Unnamed>",
                  blocks_movement: bool = False,
@@ -36,16 +36,20 @@ class Entity:
         self.blocks_movement = blocks_movement
         self.render_order = render_order
 
-        if gamemap:
+        if parent:
             # If gamemap isn't provided now, then it will be set later
-            self.GAMEMAP = gamemap
-            gamemap.entities.add(self)
+            self.parent = parent
+            parent.entities.add(self)
+
+    @property
+    def gamemap(self) -> GameMap:
+        return self.parent.gamemap
 
     def spawn(self: T, gamemap: GameMap, pos: Tuple[int, int] = (0, 0)) -> T:
         """Spawn a copy of this instance at the gives location."""
         clone = copy.deepcopy(self)
         clone.pos = list(pos)
-        clone.GAMEMAP = gamemap
+        clone.parent = gamemap
         gamemap.entities.add(clone)
         return clone
 
@@ -63,9 +67,9 @@ class Entity:
         """Place entity without movement."""
         self.pos = list(position) or [0, 0]
         if gamemap:
-            if hasattr(self, "GAMEMAP"):
-                self.GAMEMAP.entities.remove(self)
-            self.GAMEMAP = gamemap
+            if hasattr(self, "parent"):
+                self.parent.entities.remove(self)
+            self.parent = gamemap
             gamemap.entities.add(self)
 
     @property
@@ -86,14 +90,14 @@ class Actor(Entity):
                  ai_cls: Type[BaseAI],
                  fighter: Fighter):
 
-        super().__init__(gamemap=gamemap, sprite=sprite,
+        super().__init__(parent=gamemap, sprite=sprite,
                          name=name, blocks_movement=True,
                          render_order=RenderOrder.ACTOR)
 
         self.ai: Optional[BaseAI] = ai_cls(self)
 
         self.fighter = fighter
-        self.fighter.entity = self
+        self.fighter.parent = self
 
     @property
     def is_alive(self) -> bool:

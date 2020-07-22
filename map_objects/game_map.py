@@ -31,6 +31,10 @@ class GameMap:
             (width, height), fill_value=False, order="F")  # seen before tiles
 
     @property
+    def gamemap(self) -> GameMap:
+        return self
+
+    @property
     def actors(self) -> Iterator[Actor]:
         """Iterate over this map's living actors"""
         yield from (

@@ -5,14 +5,12 @@ import numpy as np  # type: ignore
 import tcod
 
 from actions import Action, ActionMelee, ActionMove, ActionWait
-from components.base_component import BaseComponent
 
 if TYPE_CHECKING:
     from entity import Actor
 
 
-class BaseAI(Action, BaseComponent):
-    entity: Actor
+class BaseAI(Action):
 
     def perform(self):
         raise NotImplementedError()
@@ -55,9 +53,9 @@ class Hostile(BaseAI):
         If there's no valid path, then return an empty string"""
 
         # Copy the walkable array (all costs are 1)
-        cost = np.array(self.entity.GAMEMAP.tiles["walkable"], dtype=np.int8)
+        cost = np.array(self.entity.parent.tiles["walkable"], dtype=np.int8)
 
-        for entity in self.entity.GAMEMAP.entities:
+        for entity in self.entity.parent.entities:
             if entity.blocks_movement and cost[entity.position]:
                 # if the entity blocks movement...
                 # and its position exists in the walkable tiles

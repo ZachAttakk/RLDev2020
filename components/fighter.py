@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class Fighter(BaseComponent):
-    entity: Actor
+    parent: Actor
 
     def __init__(self, hp: int, defense: int, power: int):
         self.max_hp = hp
@@ -27,24 +27,24 @@ class Fighter(BaseComponent):
     @hp.setter
     def hp(self, value: int) -> None:
         self._hp = max(0, min(value, self.max_hp))
-        if self._hp == 0 and self.entity.ai:
+        if self._hp == 0 and self.parent.ai:
             self.die()
 
     def die(self) -> None:
-        if self.engine.PLAYER is self.entity:
+        if self.engine.PLAYER is self.parent:
             death_message = "You died!"
             death_message_colour = CONFIG.get_colour("player_die")
             self.engine.eventhandler = GameOverEventHandler(self.engine)
         else:
-            death_message = f"{self.entity.name} is dead!"
+            death_message = f"{self.parent.name} is dead!"
             death_message_colour = CONFIG.get_colour("enemy_die")
 
-        self.entity.blocks_movement = False
-        self.entity.ai = None
-        self.entity.render_order = RenderOrder.CORPSE
-        self.entity.name = f"remains of {self.entity.name}"
+        self.parent.blocks_movement = False
+        self.parent.ai = None
+        self.parent.render_order = RenderOrder.CORPSE
+        self.parent.name = f"remains of {self.parent.name}"
 
         # TODO: I don't like modifying sprite colours directly
-        self.entity.sprite["fgcolour"] = CONFIG.get_colour("black")
+        self.parent.sprite["fgcolour"] = CONFIG.get_colour("black")
 
         self.engine.message_log.add_message(death_message, death_message_colour)

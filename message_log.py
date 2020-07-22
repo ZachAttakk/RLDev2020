@@ -1,4 +1,4 @@
-from typing import List, Reversible, Tuple
+from typing import Iterable, List, Reversible, Tuple
 import numpy as np
 
 import pygame
@@ -40,8 +40,8 @@ class MessageLog:
         else:
             self.messages.append(Message(text, fg))
 
-    @staticmethod
-    def render_messages(size: Tuple[int, int],
+    @classmethod
+    def render_messages(cls, size: Tuple[int, int],
                         messages: Reversible[Message],
                         font: pygame.font) -> None:
         """Render the messages provided and return them on a surface
@@ -52,7 +52,7 @@ class MessageLog:
         y_offset = size[1] - font.get_linesize()
 
         for message in reversed(messages):
-            for line in reversed(MessageLog.wrap_text(message.full_text, font, int(size[0]))):
+            for line in reversed(cls.wrap_text(message.full_text, font, int(size[0]))):
                 print_pos = (0, y_offset)
                 render_functions.render_text(
                     con, line, print_pos, message.fg_col, font)

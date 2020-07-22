@@ -22,7 +22,7 @@ class Action:
     @property
     def engine(self) -> Engine:
         """Return engine for this action"""
-        return self.entity.GAMEMAP.engine
+        return self.entity.parent.engine
 
     def perform(self) -> bool:
         """
