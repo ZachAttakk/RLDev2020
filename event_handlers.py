@@ -1,11 +1,12 @@
 '''event handler code'''
 from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
-from typing import Optional
+import exceptions
 import pygame.event
-from actions import Action, ActionEscape, ActionMove, ActionEscape, ActionQuit, ActionBump, ActionWait, ActionFullscreen, ActionMouseMove
+from actions import Action, ActionEscape, ActionEscape, ActionQuit, ActionBump, ActionWait, ActionFullscreen, ActionMouseMove
 
 from keyboard_layout import MOVE_KEYS, WAIT_KEYS
+from config import Config as CONFIG
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -33,13 +34,19 @@ class MainGameEventHandler(EventHandler):
                     continue
                 # do the thing.
                 # actions will handle their own validation
-                something_happened = action.perform()
+                try:
+                    something_happened = action.perform()
+                except exceptions.Impossible as exc:
+                    self.engine.message_log.add_message(exc.args[0], CONFIG.get_colour("error"))
+                    return False
 
             if something_happened:
                 # let the baddies go
                 self.engine.handle_enemy_turns()
                 # update FOV
                 self.engine.update_fov()
+
+        return something_happened
 
     def process_event(self, event) -> Optional[Action]:
         '''Handles events and passes back actions'''

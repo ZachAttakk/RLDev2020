@@ -6,6 +6,7 @@ import numpy as np
 from tcod.map import compute_fov
 import pygame
 import spritesheet
+import exceptions
 
 from config import Config as CONFIG
 from entity import Entity
@@ -47,7 +48,10 @@ class Engine:
     def handle_enemy_turns(self) -> None:
         for entity in set(self.GAMEMAP.actors) - {self.PLAYER}:
             if entity.ai:
-                entity.ai.perform()
+                try:
+                    entity.ai.perform()
+                except exceptions.Impossible:
+                    pass  # ignore impossible actions when coming from AI
 
     def update_fov(self) -> None:
         """Recompute the visible area based on the player's point of view."""

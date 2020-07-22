@@ -22,7 +22,12 @@ class Config:
         "welcome_text": (0x20, 0xA0, 0xFF),
         "bar_text": "white",
         "bar_filled": (0x0, 0x60, 0x0),
-        "bar_empty": (0x40, 0x10, 0x10)
+        "bar_empty": (0x40, 0x10, 0x10),
+        "invalid": (0xFF, 0xFF, 0x00),
+        "impossible": (0x80, 0x80, 0x80),
+        "error": (0xFF, 0x40, 0x40),
+        "health_recovered": (0x0, 0xFF, 0x0),
+        "health_potion": (127, 0, 255)
     }
 
     @classmethod
@@ -60,6 +65,11 @@ class Config:
             "sheet": "1bit",
             "fgcolour": "player"
         },
+        "player_dead": {
+            "values": (0, 14),
+            "sheet": "1bit",
+            "fgcolour": "player"
+        },
         "blue": {
             "values": (18, 7),
             "sheet": "1bit",
@@ -70,6 +80,16 @@ class Config:
             "sheet": "1bit",
             "fgcolour": "yellow"
         },
+        "blue_dead": {
+            "values": (23, 7),
+            "sheet": "1bit",
+            "fgcolour": "black"
+        },
+        "yellow_dead": {
+            "values": (23, 8),
+            "sheet": "1bit",
+            "fgcolour": "black"
+        },
         "floor": {
             "values": (0, 0),
             "sheet": "1bit",
@@ -79,6 +99,11 @@ class Config:
             "values": (10, 17),
             "sheet": "1bit",
             "bgcolour": "floor"
+        },
+        "health potion": {
+            "values": (34, 13),
+            "sheet": "1bit",
+            "fgcolour": "health_potion"
         }
     }
     Game = {
@@ -88,7 +113,8 @@ class Config:
         "room_size_min": 3,
         "rooms_max": 10,
         "fov_radius": 4,
-        "monsters_per_room": 2
+        "monsters_per_room": 2,
+        "potions_per_room": 2
     }
     Display = {
         "fullscreen": False,

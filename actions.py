@@ -1,16 +1,14 @@
 """Action object and its derivitives"""
 from __future__ import annotations
+from enum import IntEnum
 
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 from config import Config as CONFIG
+import exceptions
 
 if TYPE_CHECKING:
     from engine import Engine
-    from entity import Actor, Entity
-
-
-class GoFullscreenError(Exception):
-    pass
+    from entity import Actor, Entity, Item
 
 
 class Action:
@@ -53,7 +51,7 @@ class ActionFullscreen(Action):
         pass
 
     def perform(self) -> None:
-        raise GoFullscreenError()
+        pass
 
 
 class ActionQuit(Action):
@@ -144,12 +142,14 @@ class ActionMove(ActionWithDirection):
         # check if the tile is walkable
         elif not self.engine.GAMEMAP.tiles["walkable"][dest_x, dest_y]:
             validation = False  # destination is blocked by a tile
+        # check if there's an entity in the way
         elif self.engine.GAMEMAP.get_blocking_entity_at((dest_x, dest_y)):
             validation = False  # destination is occupied by blocking entity
 
         if validation:
             self.entity.move((self.d_x, self.d_y))  # delta is tuple
-
+        else:
+            raise exceptions.Impossible("That way is blocked.")
         # return true to trigger player turn
         return True
 
@@ -160,7 +160,7 @@ class ActionMelee(ActionWithDirection):
     def perform(self):
         target = self.target_actor
         if not target:
-            return  # No entity to attack
+            raise exceptions.Impossible("Nothing to attack.")  # No entity to attack
 
         damage = self.entity.fighter.power - target.fighter.defense
 
@@ -192,3 +192,21 @@ class ActionWait(Action):
         """Return True to trigger player turn"""
         # return true to trigger player turn
         return True
+
+
+class ActionItem(Action):
+    def __init__(self, entity: Actor, item: Item, target_pos: Optional(Tuple[int, int]) = None):
+        super().__init__(entity)
+        self.item = item
+        if not target_pos:
+            target_pos = entity.position
+        self.target_pos = target_pos
+
+    @property
+    def target_actor(self) -> Optional[Actor]:
+        """Return the actor at this action's destination"""
+        return self.engine.game_map.get_actor_at(self.target_pos)
+
+    def perform(self) -> None:
+        """Invoke the item's ability, this action will be given to provide context."""
+        self.item.consumable.activate(self)

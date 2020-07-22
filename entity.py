@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from pygame.surface import Surface
 from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING
+from config import Config as CONFIG
 import copy
 from render_order import RenderOrder
 
@@ -10,6 +11,7 @@ from render_order import RenderOrder
 if TYPE_CHECKING:
     from components.ai import BaseAI
     from components.fighter import Fighter
+    from components.consumable import Consumable
     from map_objects.game_map import GameMap
 
 T = TypeVar("T", bound="Entity")
@@ -22,7 +24,6 @@ class Entity:
 
     def __init__(self, *,
                  parent: Optional[GameMap] = None,
-                 sprite: Optional[dict] = None,
                  name: str = "<Unnamed>",
                  blocks_movement: bool = False,
                  render_order: RenderOrder = RenderOrder.CORPSE,
@@ -30,7 +31,7 @@ class Entity:
         """Create new entity with position and tile sprite"""
 
         self.pos = [0, 0]
-        self.sprite = sprite
+        self.sprite = CONFIG.Sprites.get(name.lower())
 
         self.name = name
         self.blocks_movement = blocks_movement
@@ -84,14 +85,11 @@ class Entity:
 
 class Actor(Entity):
     def __init__(self, *,
-                 gamemap=None,
-                 sprite=None,
                  name='<Unnamed>',
                  ai_cls: Type[BaseAI],
                  fighter: Fighter):
 
-        super().__init__(parent=gamemap, sprite=sprite,
-                         name=name, blocks_movement=True,
+        super().__init__(name=name, blocks_movement=True,
                          render_order=RenderOrder.ACTOR)
 
         self.ai: Optional[BaseAI] = ai_cls(self)
@@ -103,3 +101,14 @@ class Actor(Entity):
     def is_alive(self) -> bool:
         """Returns True as long as this actor can porform actions."""
         return bool(self.ai)
+
+
+class Item(Entity):
+    def __init__(self, *,
+                 name: str = '<Unnamed>',
+                 consumable: Consumable,):
+
+        super().__init__(name=name, blocks_movement=False, render_order=RenderOrder.ITEM)
+
+        self.consumable = consumable
+        self.consumable.parent = self

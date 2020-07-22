@@ -1,10 +1,10 @@
 
+from numpy.core.fromnumeric import trace
 import pygame
-import spritesheet
 import copy
+import traceback
 
 from engine import Engine
-from actions import GoFullscreenError
 from procgen import generate_dungeon
 from config import Config as CONFIG
 import entity_factories
@@ -41,6 +41,7 @@ def main() -> None:
                                       CONFIG.Game.get("map_width"),
                                       CONFIG.Game.get("map_height"),
                                       CONFIG.Game.get("monsters_per_room"),
+                                      CONFIG.Game.get("potions_per_room"),
                                       engine=engine)
 
     # Do the first FOV update for where the player stands
@@ -58,9 +59,10 @@ def main() -> None:
         except (SystemExit):
             should_quit = True
             continue
-        except (GoFullscreenError):
-            # pygame.display.set_mode
-            pass
+        except Exception:
+            traceback.print_exc()  # print error to stderr.
+            # then print error to message log.
+            engine.message_log.add_message(traceback.format_exc(), CONFIG.get_colour("error"))
 
         # print to screen
         engine.render(surface_main)
