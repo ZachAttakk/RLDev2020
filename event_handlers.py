@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
 import exceptions
 import pygame.event
-from actions import Action, ActionEscape, ActionEscape, ActionQuit, ActionBump, ActionWait, ActionFullscreen, ActionMouseMove
+from actions import Action, ActionEscape, ActionEscape, ActionQuit, ActionBump, ActionWait, ActionFullscreen, ActionMouseMove, ActionPickup
 
 from keyboard_layout import MOVE_KEYS, WAIT_KEYS
 from config import Config as CONFIG
@@ -69,6 +69,8 @@ class MainGameEventHandler(EventHandler):
                 response = ActionEscape()
             elif event.key == pygame.K_F11:
                 response = ActionFullscreen()
+            elif event.key == pygame.K_g:
+                response = ActionPickup(player)
 
         if event.type == pygame.MOUSEMOTION:
             response = ActionMouseMove(self.engine, pygame.mouse.get_pos())

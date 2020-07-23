@@ -9,21 +9,20 @@ import spritesheet
 import exceptions
 
 from config import Config as CONFIG
-from entity import Entity
 from map_objects.game_map import GameMap
 from message_log import MessageLog
 import event_handlers
 import render_functions
 
 if TYPE_CHECKING:
-    from entity import Entity
+    from entity import Actor
     from map_objects.game_map import GameMap
 
 
 class Engine:
     """Engine class"""
 
-    game_map: GameMap
+    GAMEMAP: GameMap
 
     def __init__(self, player: Actor):
         self.PLAYER = player

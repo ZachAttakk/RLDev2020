@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import Iterable, Iterator, Optional, Tuple, TYPE_CHECKING
 import numpy as np
 from map_objects import tile_types
-from entity import Actor
+from entity import Actor, Item
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -41,6 +41,10 @@ class GameMap:
             entity for entity in self.entities
             if isinstance(entity, Actor) and entity.is_alive
         )
+
+    @property
+    def items(self) -> Iterator[Item]:
+        yield from (entity for entity in self.entities if isinstance(entity, Item))
 
     def get_names_at_location(self, x: int, y: int) -> str:
         if not self.in_bounds(x, y) or not self.visible[x, y]:

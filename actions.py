@@ -1,5 +1,6 @@
 """Action object and its derivitives"""
 from __future__ import annotations
+from components.inventory import Inventory
 from enum import IntEnum
 
 from typing import Optional, TYPE_CHECKING
@@ -40,7 +41,7 @@ class ActionEscape(Action):
 
     # TODO: Make it escape whatever it's in
     def perform(self) -> None:
-        raise SystemExit()
+        ActionQuit.perform(self)
 
 
 class ActionFullscreen(Action):
@@ -123,6 +124,34 @@ class ActionBump(ActionWithDirection):
             return ActionMelee(self.entity, self.d_x, self.d_y).perform()
         else:
             return ActionMove(self.entity, self.d_x, self.d_y).perform()
+
+
+class ActionPickup(ActionWithPosition):
+    """
+    Pick up item(s) on this tile
+    """
+
+    def __init__(self, entity: Actor) -> None:
+        super().__init__(entity.position)
+        self.entity = entity
+
+    def perform(self) -> None:
+        inventory = self.entity.inventory
+
+        for item in self.engine.GAMEMAP.items:
+            if self.position == item.position:
+                if len(inventory.items) >= inventory.capacity:
+                    raise exceptions.Impossible("Your inventory is full.")
+
+                self.engine.GAMEMAP.entities.remove(item)
+                item.parent = self.entity.inventory
+                inventory.items.append(item)
+
+                self.engine.message_log.add_message(f"You picked up the {item.name}.")
+                return True  # because it takes a turn
+
+        # if we reach this point, we didn't pick up anything
+        exceptions.Impossible("There is nothing here to pick up.")
 
 
 class ActionMove(ActionWithDirection):

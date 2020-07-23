@@ -3,6 +3,7 @@ from numpy.core.fromnumeric import trace
 import pygame
 import copy
 import traceback
+import sys
 
 from engine import Engine
 from procgen import generate_dungeon
@@ -14,7 +15,8 @@ def main() -> None:
 
     # It has to start somewhere, it has to start sometime.
     # What better place than here, what better time than now.
-    pygame.init()
+    pygame.display.init()
+    pygame.font.init()
 
     # make main surface
     surface_main = pygame.display.set_mode(

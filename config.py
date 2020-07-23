@@ -57,6 +57,11 @@ class Config:
             "path": os.path.join("assets", "monochrome_transparent.png"),
             "tile_size": 16,
             "tile_gap": 1
+        },
+        "1bitplat": {
+            "path": os.path.join("assets", "platformer.png"),
+            "tile_size": 16,
+            "tile_gap": 1
         }
     }
     Sprites = {
@@ -104,6 +109,15 @@ class Config:
             "values": (34, 13),
             "sheet": "1bit",
             "fgcolour": "health_potion"
+        },
+        "frame": {
+            "values": {
+                (17, 17), (18, 17), (19, 17)
+                (17, 18), (18, 18), (19, 18)
+                (17, 19), (18, 19), (19, 19)},
+            "sheet": "1bitplat",
+            "fgcolour": "white",
+            "bgcolour": "grey"
         }
     }
     Game = {
@@ -114,7 +128,8 @@ class Config:
         "rooms_max": 10,
         "fov_radius": 4,
         "monsters_per_room": 2,
-        "potions_per_room": 2
+        "potions_per_room": 2,
+        "inventory_size": 26
     }
     Display = {
         "fullscreen": False,

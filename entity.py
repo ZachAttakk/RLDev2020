@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from components.ai import BaseAI
     from components.fighter import Fighter
     from components.consumable import Consumable
+    from components.inventory import Inventory
     from map_objects.game_map import GameMap
 
 T = TypeVar("T", bound="Entity")
@@ -87,7 +88,7 @@ class Actor(Entity):
     def __init__(self, *,
                  name='<Unnamed>',
                  ai_cls: Type[BaseAI],
-                 fighter: Fighter):
+                 fighter: Fighter, inventory: Inventory,):
 
         super().__init__(name=name, blocks_movement=True,
                          render_order=RenderOrder.ACTOR)
@@ -96,6 +97,9 @@ class Actor(Entity):
 
         self.fighter = fighter
         self.fighter.parent = self
+
+        self.inventory = inventory
+        self.inventory.parent = self
 
     @property
     def is_alive(self) -> bool:
