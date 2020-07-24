@@ -48,6 +48,7 @@ class MessageLog:
         """
 
         con = pygame.Surface(size).convert_alpha()
+        con.fill(CONFIG.get_colour("empty"))
         # start the first one 2 pixels off the bottom
         y_offset = size[1] - font.get_linesize()
 

@@ -54,7 +54,7 @@ class GameMap:
             entity.name for entity in self.entities if entity.position == (x, y)
         )
 
-        return names.capitalize()
+        return names
 
     def in_bounds(self, x: int, y: int) -> bool:
         """Return True if x and f are inside the bounds of the map."""

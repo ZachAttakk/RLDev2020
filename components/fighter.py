@@ -62,11 +62,13 @@ class Fighter(BaseComponent):
         self.parent.render_order = RenderOrder.CORPSE
         death_sprite = CONFIG.Sprites.get(self.parent.name.lower()+"_dead")
         if death_sprite:
-            self.parent.sprite = CONFIG.Sprites.get(self.parent.name.lower()+"_dead")
+            self.parent.sprite = CONFIG.Sprites.get(
+                self.parent.name.lower()+"_dead")
         else:
             self.parent.sprite["fgcolour"] = CONFIG.get_colour("black")
 
         # from this point onwards, the entity name and the sprite doesn't match
-        self.parent.name = f"remains of {self.parent.name}"
+        self.parent.name = f"Remains of {self.parent.name}"
 
-        self.engine.message_log.add_message(death_message, death_message_colour)
+        self.engine.message_log.add_message(
+            death_message, death_message_colour)

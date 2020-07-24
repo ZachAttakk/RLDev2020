@@ -7,6 +7,7 @@
 # https://www.pygame.org/wiki/Spritesheet
 # Heavily modified by me
 # Sheets now remember their tile size and can provide sprites based on it
+from typing import Dict, Tuple
 import pygame
 from config import Config as CONFIG
 
@@ -72,13 +73,17 @@ class Spritesheet(object):
         return self.images_at(tups)
 
     def sprite_at(self, sprite_data):
-        "Loads sprite at position for the size of tile and gap between tiles provided"
+        "Loads sprite (or sprites) at position for the size of tile and gap between tiles provided"
 
         # extract fgcolour, bgcolour, values
         fgcolour = sprite_data.get("fgcolour")
         bgcolour = sprite_data.get("bgcolour")
 
-        pos = sprite_data.get("values") or (0, 0)
+        # if no values provided, grab the first sprite
+        if not sprite_data.get("values"):
+            sprite_data["values"] = (0, 0)
+
+        pos = sprite_data.get("values")
         # calculate pixel positions
         if pos[0] != 0:
             _x_pix = pos[0]*(self.tile_size+self.tile_gap)
@@ -125,3 +130,26 @@ class Spritesheet(object):
         else:
             # return the sprite without background colours
             return sprite
+
+        # if there's only one sprite, return it
+        # otherwise return the list
+        if len(response) == 1:
+            return response[0]
+        else:
+            return response
+
+    def sprites_at(self, sprites_data: Dict):
+        """ Return several sprites """
+
+        # if there's only one tuple in the values field, call the sprite function once and then return
+        if isinstance(sprites_data.get("values"), Tuple):
+            return self.sprite_at(sprites_data)
+
+        response = []
+        _base = sprites_data.copy()
+
+        for pos in sprites_data.get("values"):
+            _base["values"] = pos
+            response.append(self.sprite_at(_base))
+
+        return response

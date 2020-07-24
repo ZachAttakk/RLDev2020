@@ -111,13 +111,14 @@ class Config:
             "fgcolour": "health_potion"
         },
         "frame": {
-            "values": {
-                (17, 17), (18, 17), (19, 17)
-                (17, 18), (18, 18), (19, 18)
-                (17, 19), (18, 19), (19, 19)},
+            "values": [
+                (17, 17), (18, 17), (19, 17),
+                (17, 18), (18, 18), (19, 18),
+                (17, 19), (18, 19), (19, 19)
+            ],
             "sheet": "1bitplat",
             "fgcolour": "white",
-            "bgcolour": "grey"
+            "bgcolour": "black"
         }
     }
     Game = {

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Iterable
 import numpy as np
+from pygame import sprite
 from tcod.map import compute_fov
 import pygame
 import spritesheet
@@ -83,15 +84,20 @@ class Engine:
                                     CONFIG.Sprites, CONFIG.Display.get("tile_size"))
 
         # render names of things under the mouse
-        render_functions.render_names(surface_map, self.GAMEMAP, self.mouse_position, self.fonts.get("mini"))
+        render_functions.render_names(
+            surface_map, self.GAMEMAP, self.mouse_position, self.fonts.get("mini"))
 
         # log will take up the rest of the space on the right
-        log_size = (
-            int(CONFIG.Display.get("game_width") - CONFIG.Display.get("game_height")),
-            CONFIG.Display.get("game_height"))
+        ui_size = [
+            int(CONFIG.Display.get("game_width") -
+                CONFIG.Display.get("game_height")),
+            CONFIG.Display.get("game_height")]
+        surface_ui = render_functions.make_window(
+            tuple(ui_size), self.spritesheets, CONFIG.Sprites.get("frame"))
 
-        surface_log = self.message_log.render_messages(
-            size=log_size, messages=self.message_log.messages, font=self.fonts.get("mini"))
+        # TODO: Magic numbers!?
+        surface_ui.blit(self.message_log.render_messages(
+            size=(ui_size[0]-16, ui_size[1]-16), messages=self.message_log.messages, font=self.fonts.get("mini")), (8, 8))
 
         render_functions.render_bar(surface_map, current_value=self.PLAYER.fighter.hp,
                                     max_value=self.PLAYER.fighter.max_hp, total_width=60, font=self.fonts.get("mini"))
@@ -104,7 +110,7 @@ class Engine:
         # Now we blit to the screen.
         surface_main.blit(surface_map, (0, 0))
         # to the right of the map
-        surface_main.blit(surface_log, (surface_map.get_width(), 0))
+        surface_main.blit(surface_ui, (surface_map.get_width(), 0))
 
         # Push to screen
         pygame.display.flip()

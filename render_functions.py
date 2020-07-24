@@ -7,6 +7,7 @@ import pygame
 import spritesheet
 from config import Config as CONFIG
 from map_objects import tile_types
+from spritesheet import Spritesheet
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -83,33 +84,54 @@ def render_names(con, game_map, position, font, tile_size=16):
     names = game_map.get_names_at_location(tile_x, tile_y)
     if names:
         # offset name so it's not behind the mouse
+        x_pos = position[0] + font.get_linesize()
         y_pos = position[1] - font.get_linesize()
-        render_outlined_text(con, names, (position[0], y_pos), CONFIG.get_colour("white"), font)
+        render_outlined_text(
+            con, names, (x_pos, y_pos), CONFIG.get_colour("white"), font, break_on_comma=True)
 
 
-def render_text(con, text, position: Tuple[int, int], fg_col, fonts):
+def render_text(con, text: str, position: Tuple[int, int], fg_col, fonts, break_on_comma=False):
 
     if isinstance(fonts, dict):
         font = fonts.get("mini")
     else:
         font = fonts
 
-    text_surface = font.render(
-        text, False, CONFIG.get_colour(fg_col))
+    if break_on_comma and "," in text:
+        text_lines = text.split(",")
+        _longest = max(text_lines, key=len)
+        _width = font.size(_longest)[0]
+        text_surface = pygame.Surface(
+            (_width, (font.get_linesize()*len(text_lines)))).convert_alpha()
+        text_surface.fill(CONFIG.get_colour("empty"))
+
+        y_offset = 0
+
+        for line in text_lines:
+            print_pos = (0, y_offset)
+            render_text(
+                text_surface, line, (0, y_offset), fg_col, font)
+            y_offset += font.get_linesize()
+    else:
+        text_surface = font.render(
+            text, False, CONFIG.get_colour(fg_col))
+
     con.blit(text_surface, position)
 
 
-def render_outlined_text(con, text, position: Tuple[int, int], fg_col, fonts):
+def render_outlined_text(con, text, position: Tuple[int, int], fg_col, fonts, break_on_comma=False):
     # 9 positions, either way of the middle
+
     for x in range(-1, 2):
         for y in range(-1, 2):
             temp_x, temp_y = position
             temp_x += x
             temp_y += y
-            render_text(con, text, (temp_x, temp_y), "black", fonts)
+            render_text(con, text, (temp_x, temp_y),
+                        "black", fonts, break_on_comma)
 
     # and the actual text...
-    render_text(con, text, position, fg_col, fonts)
+    render_text(con, text, position, fg_col, fonts, break_on_comma)
 
 
 def render_scanlines(con):
@@ -150,3 +172,46 @@ def render_bar(con, current_value, max_value, total_width, font) -> None:
         "white"), font)
 
     con.blit(_bar, (0, 0))
+
+
+def make_window(size, sheets: Spritesheet, decorations, tile_size=16):
+    """Create a window that can be displayed
+
+    Args:
+        size (Tuple(int,int)): Size of window in x and y
+        sheets : [description]
+        decorations (dict): Configc entry with sprite details for window decorations
+
+    Returns:
+        Surface: The window containing decorations and background
+    """
+    # get needed data
+    # this should be 9 sprites in a list
+    # 0 111111 2
+    # 3        5
+    # 3        5
+    # 6 777777 8
+    _sheet = sheets.get(decorations.get("sheet"))
+    _sprites = _sheet.sprites_at(decorations)
+    # create surface
+    window = pygame.Surface(size).convert_alpha()
+    # apply background colour
+    if decorations.get("bgcolour"):
+        window.fill(CONFIG.get_colour(decorations.get("bgcolour")))
+    # place side lengths
+    # leave the corners
+    for i in range(tile_size, size[1]-tile_size, tile_size):
+        window.blit(_sprites[3], (0, i))
+        window.blit(_sprites[5], (size[0]-tile_size, i))
+
+    for i in range(tile_size, size[1]-tile_size, tile_size):
+        window.blit(_sprites[1], (i, 0))
+        window.blit(_sprites[7], (i, size[1]-tile_size))
+    # place 4 corner pieces
+    window.blit(_sprites[0], (0, 0))
+    window.blit(_sprites[2], (size[0]-tile_size, 0))
+    window.blit(_sprites[6], (0, size[1]-tile_size))
+    window.blit(_sprites[8], (size[0]-tile_size, size[1]-tile_size))
+
+    # return surface
+    return window
