@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from components.base_component import BaseComponent
 from event_handlers import GameOverEventHandler
 from config import Config as CONFIG
-from render_order import RenderOrder
+from render_functions import RenderOrder
 
 if TYPE_CHECKING:
     from entity import Actor

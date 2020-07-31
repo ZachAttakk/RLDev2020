@@ -45,7 +45,7 @@ class ActionEscape(Action):
 
 
 class ActionFullscreen(Action):
-    '''Action that changes from fullscreen to window and vice versa'''
+    '''Action that ges from fullscreen to window and vice versa'''
 
     def __init__(self):
         """Space intentionally left blank"""
@@ -147,7 +147,8 @@ class ActionPickup(ActionWithPosition):
                 item.parent = self.entity.inventory
                 inventory.items.append(item)
 
-                self.engine.message_log.add_message(f"You picked up the {item.name}.")
+                self.engine.message_log.add_message(
+                    f"You picked up the {item.name}.")
                 return True  # because it takes a turn
 
         # if we reach this point, we didn't pick up anything
@@ -189,7 +190,8 @@ class ActionMelee(ActionWithDirection):
     def perform(self):
         target = self.target_actor
         if not target:
-            raise exceptions.Impossible("Nothing to attack.")  # No entity to attack
+            raise exceptions.Impossible(
+                "Nothing to attack.")  # No entity to attack
 
         damage = self.entity.fighter.power - target.fighter.defense
 
@@ -201,10 +203,12 @@ class ActionMelee(ActionWithDirection):
             attack_color = CONFIG.get_colour("enemy_atk")
 
         if damage > 0:
-            self.engine.message_log.add_message(f"{attack_desc} for {damage} HP.", attack_color)
+            self.engine.message_log.add_message(
+                f"{attack_desc} for {damage} HP.", attack_color)
             target.fighter.hp -= damage
         else:
-            self.engine.message_log.add_message(f"{attack_desc} but does no damage.", attack_color)
+            self.engine.message_log.add_message(
+                f"{attack_desc} but does no damage.", attack_color)
 
         # return true to trigger player turn
         return True

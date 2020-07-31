@@ -5,7 +5,7 @@ from pygame.surface import Surface
 from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING
 from config import Config as CONFIG
 import copy
-from render_order import RenderOrder
+from render_functions import RenderOrder
 
 
 if TYPE_CHECKING:
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from components.consumable import Consumable
     from components.inventory import Inventory
     from map_objects.game_map import GameMap
-
+    from render_functions import RenderOrder
 T = TypeVar("T", bound="Entity")
 
 

@@ -6,6 +6,7 @@ import numpy as np
 from pygame import sprite
 from tcod.map import compute_fov
 import pygame
+import pygame.surface
 import spritesheet
 import exceptions
 
@@ -13,7 +14,7 @@ from config import Config as CONFIG
 from map_objects.game_map import GameMap
 from message_log import MessageLog
 import event_handlers
-import render_functions
+from render_functions import RenderEngine
 
 if TYPE_CHECKING:
     from entity import Actor
@@ -27,23 +28,11 @@ class Engine:
 
     def __init__(self, player: Actor):
         self.PLAYER = player
-        self.spritesheets = spritesheet.get_sheets(CONFIG.SpriteSheets)
-        self.fonts = self.load_fonts(CONFIG.Fonts)
         self.message_log = MessageLog()
         self.eventhandler: event_handlers.EventHandler = event_handlers.MainGameEventHandler(
             self)
         self.mouse_position = (0, 0)
-
-    @staticmethod
-    def load_fonts(fonts):
-        loaded_fonts = {}
-        for i in fonts:
-            # for each font in the list, grab the dictionary under it
-            _ff = fonts.get(i)
-            # make a font from it, add it to the dictionary that's being returned
-            loaded_fonts[i] = pygame.font.Font(_ff.get("path"), 8)
-            # and send them back
-        return loaded_fonts
+        self.render_engine = RenderEngine()
 
     def handle_enemy_turns(self) -> None:
         for entity in set(self.GAMEMAP.actors) - {self.PLAYER}:
@@ -80,37 +69,37 @@ class Engine:
         surface_map.fill(CONFIG.get_colour("black"))
 
         # draw map
-        render_functions.render_map(surface_map, self.GAMEMAP, self.spritesheets,
-                                    CONFIG.Sprites, CONFIG.Display.get("tile_size"))
-
-        # render names of things under the mouse
-        render_functions.render_names(
-            surface_map, self.GAMEMAP, self.mouse_position, self.fonts.get("mini"))
+        self.render_engine.render_map(surface_map, self.GAMEMAP,
+                                      CONFIG.Sprites, CONFIG.Display.get("tile_size"))
 
         # log will take up the rest of the space on the right
         ui_size = [
             int(CONFIG.Display.get("game_width") -
                 CONFIG.Display.get("game_height")),
             CONFIG.Display.get("game_height")]
-        surface_ui = render_functions.make_window(
-            tuple(ui_size), self.spritesheets, CONFIG.Sprites.get("frame"))
+        surface_ui = self.render_engine.make_window(
+            tuple(ui_size), CONFIG.Sprites.get("frame"))
 
         # TODO: Magic numbers!?
-        surface_ui.blit(self.message_log.render_messages(
-            size=(ui_size[0]-16, ui_size[1]-16), messages=self.message_log.messages, font=self.fonts.get("mini")), (8, 8))
+        surface_ui.blit(self.render_engine.make_message_log(
+            size=(ui_size[0]-16, ui_size[1]-16), messages=self.message_log.messages), (8, 8))
 
-        render_functions.render_bar(surface_map, current_value=self.PLAYER.fighter.hp,
-                                    max_value=self.PLAYER.fighter.max_hp, total_width=60, font=self.fonts.get("mini"))
+        self.render_engine.render_bar(surface_map, current_value=self.PLAYER.fighter.hp,
+                                      max_value=self.PLAYER.fighter.max_hp, total_width=60)
 
         # MAKE SURE THIS IS ALWAYS LAST IN RENDER ORDER
         # render scanlines if there should be any
         if CONFIG.Display.get("scanline_opacity") not in [0, None]:
-            render_functions.render_scanlines(surface_map)
+            self.render_engine.render_scanlines(surface_map)
 
         # Now we blit to the screen.
         surface_main.blit(surface_map, (0, 0))
         # to the right of the map
         surface_main.blit(surface_ui, (surface_map.get_width(), 0))
+
+        # render names of things under the mouse
+        self.render_engine.render_names(
+            surface_main, self.GAMEMAP, self.mouse_position)
 
         # Push to screen
         pygame.display.flip()

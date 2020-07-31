@@ -1,5 +1,5 @@
 from __future__ import annotations
-from entity import Actor, Item
+
 
 from typing import List, TYPE_CHECKING
 

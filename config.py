@@ -122,12 +122,12 @@ class Config:
         }
     }
     Game = {
-        "map_width": 22,
-        "map_height": 22,
-        "room_size_max": 6,
+        "map_width": 30,
+        "map_height": 30,
+        "room_size_max": 10,
         "room_size_min": 3,
-        "rooms_max": 10,
-        "fov_radius": 4,
+        "rooms_max": 100,
+        "fov_radius": 5,
         "monsters_per_room": 2,
         "potions_per_room": 2,
         "inventory_size": 26

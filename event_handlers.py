@@ -7,6 +7,7 @@ from actions import Action, ActionEscape, ActionEscape, ActionQuit, ActionBump, 
 
 from keyboard_layout import MOVE_KEYS, WAIT_KEYS
 from config import Config as CONFIG
+from entity import Item
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -37,7 +38,8 @@ class MainGameEventHandler(EventHandler):
                 try:
                     something_happened = action.perform()
                 except exceptions.Impossible as exc:
-                    self.engine.message_log.add_message(exc.args[0], CONFIG.get_colour("error"))
+                    self.engine.message_log.add_message(
+                        exc.args[0], CONFIG.get_colour("error"))
                     return False
 
             if something_happened:
@@ -113,3 +115,39 @@ class GameOverEventHandler(EventHandler):
         # Send back the response
         if response is not None:
             return response
+
+
+class AskUserEventHandler(EventHandler):
+    """Handle user input for actions that require special input"""
+
+    def handle_events(self):
+        events = pygame.event.get(pump=True)
+        if len(events) > 0:
+            for event in events:
+                action = self.process_event(event)
+                if action is None:
+                    continue
+                # do the thing.
+                # actions will handle their own validation
+                action.perform()
+
+    def process_event(self, event) -> Optional[Action]:
+        '''Handles events and passes back actions'''
+
+        response = None
+        # quit keys
+        if event.type == pygame.QUIT:
+            # Exit the game
+            # response['exit'] = True
+            response = ActionQuit()
+        # ignore modifier keys
+        if event.type not in [pygame.K_LSHIFT, pygame.K_RSHIFT, pygame.K_LCTRL,  pygame.K_RCTRL, pygame.K_LALT, pygame.K_RALT]:
+            response = ActionEscape()
+
+        # Send back the response
+        if response is not None:
+            return response
+
+
+class InventoryEventHandler(AskUserEventHandler):
+    """Handle selections from the inventory"""
