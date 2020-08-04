@@ -3,7 +3,7 @@ from __future__ import annotations
 from components.inventory import Inventory
 from enum import IntEnum
 
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, Tuple
 from config import Config as CONFIG
 import exceptions
 
